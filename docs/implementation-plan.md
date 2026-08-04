@@ -14,11 +14,16 @@
 
 ## Fase 2 — Identidade e onboarding
 
-- Login e recuperação de acesso.
-- Criação da primeira organização.
-- Convites e papéis de membros.
-- Rotas protegidas e shell do produto.
-- Testes de isolamento multi-tenant.
+- [x] Cadastro, login, confirmação de e-mail e recuperação de acesso.
+- [x] Criação da primeira organização.
+- [x] Convites por token com hash, expiração e validação de e-mail.
+- [x] Papéis `owner`, `admin`, `analyst`, `reviewer` e `viewer`.
+- [x] Rotas protegidas e shell do produto.
+- [x] Cadastro mínimo de projetos e processos.
+- [x] Trilha de auditoria somente leitura.
+- [x] Testes unitários de validação.
+- [ ] Executar os testes pgTAP de isolamento multi-tenant em Supabase local.
+- [ ] Validar confirmação de e-mail e recuperação com SMTP no projeto remoto.
 
 ## Fase 3 — Licença Rápida
 

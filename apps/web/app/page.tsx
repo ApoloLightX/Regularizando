@@ -1,5 +1,6 @@
 import { Button } from "@regularizando/ui/components/button";
 import { ArrowRight, Database, FileCheck2, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 const foundations = [
   {
@@ -29,7 +30,7 @@ export default function Home() {
       <section className="relative mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-20 lg:px-8">
         <div className="max-w-3xl">
           <div className="mb-6 inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground shadow-sm">
-            Licença Rápida · fundação técnica
+            Licença Rápida · acesso antecipado
           </div>
           <h1 className="text-balance text-5xl font-semibold tracking-tight sm:text-7xl">
             Regularização ambiental com menos retrabalho.
@@ -39,12 +40,17 @@ export default function Home() {
             inconsistências e preparar processos ambientais com inteligência.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button size="lg">
-              Fundação concluída
-              <ArrowRight aria-hidden="true" />
+            <Button size="lg" asChild>
+              <Link href="/cadastro">
+                Criar minha conta
+                <ArrowRight aria-hidden="true" />
+              </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href="https://github.com/ApoloLightX/Regularizando">
+              <a
+                href="https://github.com/ApoloLightX/Regularizando"
+                rel="noreferrer"
+              >
                 Ver documentação
               </a>
             </Button>
