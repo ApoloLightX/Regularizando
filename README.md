@@ -149,6 +149,7 @@ A documentação técnica está organizada em `/docs` e serve como fonte única 
 
 - [Arquitetura da Fase 1](docs/architecture.md)
 - [Plano de implementação](docs/implementation-plan.md)
+- [Identidade e onboarding da Fase 2](docs/phase-2-identity-onboarding.md)
 
 ---
 
@@ -175,6 +176,7 @@ O app web estará disponível em `http://localhost:3000`.
 ```bash
 pnpm lint
 pnpm typecheck
+pnpm test
 pnpm build
 ```
 
@@ -189,6 +191,10 @@ pnpm db:lint
 ```
 
 Em ambientes remotos, use `pnpm db:push` somente depois de conferir o projeto Supabase vinculado. O Supabase CLI é a fonte canônica de migrações; o Drizzle fornece schema tipado e acesso server-side, sem manter uma segunda linha de migrações.
+
+## Configuração de autenticação
+
+No painel do Supabase, adicione a URL pública da aplicação às URLs de redirecionamento de Auth. Em produção, configure SMTP próprio para confirmação de cadastro e recuperação de senha. O `.env.example` documenta `NEXT_PUBLIC_APP_URL`; nenhuma chave privilegiada é usada pelo app web.
 
 ---
 
