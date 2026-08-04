@@ -1,0 +1,8 @@
+{
+  "extends": "@regularizando/typescript-config/library.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["drizzle.config.ts", "src/**/*.ts"],
+  "exclude": ["node_modules"]
+}

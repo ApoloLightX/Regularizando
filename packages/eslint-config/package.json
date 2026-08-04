@@ -1,0 +1,13 @@
+{
+  "name": "@regularizando/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./next": "./next.js"
+  },
+  "dependencies": {
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.3.0"
+  }
+}

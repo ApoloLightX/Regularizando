@@ -145,9 +145,50 @@ Automação completa, integrações externas e recursos Enterprise.
 
 # Documentação
 
-A documentação técnica completa será organizada em `/docs`.
+A documentação técnica está organizada em `/docs` e serve como fonte única de verdade para desenvolvimento humano e ferramentas de IA:
 
-Ela servirá como fonte única de verdade para desenvolvimento humano e ferramentas de IA.
+- [Arquitetura da Fase 1](docs/architecture.md)
+- [Plano de implementação](docs/implementation-plan.md)
+
+---
+
+# Desenvolvimento local
+
+## Requisitos
+
+- Node.js 20.9 ou superior;
+- pnpm 10 ou superior;
+- Docker, caso utilize o Supabase local.
+
+## Início rápido
+
+```bash
+pnpm install
+cp .env.example apps/web/.env.local
+pnpm dev
+```
+
+O app web estará disponível em `http://localhost:3000`.
+
+## Validação
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm build
+```
+
+## Banco de dados
+
+As migrações que incluem recursos específicos do Supabase ficam em `supabase/migrations`. O schema Drizzle correspondente fica em `packages/db/src/schema`.
+
+```bash
+pnpm db:start
+pnpm db:reset
+pnpm db:lint
+```
+
+Em ambientes remotos, use `pnpm db:push` somente depois de conferir o projeto Supabase vinculado. O Supabase CLI é a fonte canônica de migrações; o Drizzle fornece schema tipado e acesso server-side, sem manter uma segunda linha de migrações.
 
 ---
 
