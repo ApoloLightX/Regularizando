@@ -75,7 +75,10 @@ export type Ambiguity = z.infer<typeof ambiguitySchema>;
 
 export const persistedAmbiguityAttemptSchema = z.object({
   id: z.string().min(1),
+  ambiguityId: z.string().min(1),
+  reservationId: z.string().min(1),
   number: z.literal(1),
+  state: z.literal("reserved"),
   persistedAt: z.string().datetime(),
 });
 
@@ -106,19 +109,29 @@ export interface AmbiguityRequest {
   signals: string[];
 }
 
-export const ambiguityRequestSchema = z.object({
-  ambiguityId: z.string().min(1),
-  persistedAttempt: persistedAmbiguityAttemptSchema,
-  headers: z.array(z.string()),
-  sampleRows: z.array(z.array(z.string())),
-  deterministicScores: z.object({
-    coordenadas: z.number(),
-    monitoramento: z.number(),
-    checklist_documental: z.number(),
-    tabular_generico: z.number(),
-  }),
-  signals: z.array(z.string()),
-});
+export const ambiguityRequestSchema = z
+  .object({
+    ambiguityId: z.string().min(1),
+    persistedAttempt: persistedAmbiguityAttemptSchema,
+    headers: z.array(z.string()),
+    sampleRows: z.array(z.array(z.string())),
+    deterministicScores: z.object({
+      coordenadas: z.number(),
+      monitoramento: z.number(),
+      checklist_documental: z.number(),
+      tabular_generico: z.number(),
+    }),
+    signals: z.array(z.string()),
+  })
+  .superRefine((request, context) => {
+    if (request.persistedAttempt.ambiguityId !== request.ambiguityId) {
+      context.addIssue({
+        code: "custom",
+        message: "Persisted reservation must belong to the requested ambiguity.",
+        path: ["persistedAttempt", "ambiguityId"],
+      });
+    }
+  });
 
 export interface AmbiguityResolution {
   classifications: Array<{ kind: SheetClassification; confidence: number }>;

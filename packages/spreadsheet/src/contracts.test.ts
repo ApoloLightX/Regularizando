@@ -78,17 +78,20 @@ describe("spreadsheet contracts", () => {
     ).toBe(false);
   });
 
-  it("requires an identifiable ambiguity and a persisted first attempt", () => {
+  it("requires a durable reservation for the matching ambiguity before resolution", () => {
     const ambiguity = ambiguitySchema.parse({
       id: "ambiguity-sheet-0-table-0",
       state: "attempt_persisted",
       evidence: [sourceCell],
     });
-    const request = ambiguityRequestSchema.parse({
+    const input = {
       ambiguityId: ambiguity.id,
       persistedAttempt: {
         id: "attempt-1",
+        ambiguityId: ambiguity.id,
+        reservationId: "reservation-1",
         number: 1,
+        state: "reserved",
         persistedAt: "2026-08-05T00:00:00.000Z",
       },
       headers: ["Latitude"],
@@ -100,9 +103,22 @@ describe("spreadsheet contracts", () => {
         tabular_generico: 0.1,
       },
       signals: ["latitude_header"],
-    });
+    };
+    const request = ambiguityRequestSchema.parse(input);
 
     expect(request.ambiguityId).toBe(ambiguity.id);
+    expect(request.persistedAttempt.ambiguityId).toBe(ambiguity.id);
+    expect(request.persistedAttempt.reservationId).toBe("reservation-1");
     expect(request.persistedAttempt.number).toBe(1);
+    expect(request.persistedAttempt.state).toBe("reserved");
+    expect(
+      ambiguityRequestSchema.safeParse({
+        ...input,
+        persistedAttempt: {
+          ...input.persistedAttempt,
+          ambiguityId: "another-ambiguity",
+        },
+      }).success,
+    ).toBe(false);
   });
 });
