@@ -1,6 +1,6 @@
 # Fase 3 — Planilha Inteligente
 
-**Status:** desenho aprovado em 5 de agosto de 2026; aguardando revisão da especificação escrita
+**Status:** especificação aprovada em 5 de agosto de 2026
 
 ## Objetivo
 
