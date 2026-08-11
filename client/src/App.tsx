@@ -1,3 +1,5 @@
+// Regularizando / Observatório Terra: preservar a linguagem editorial-cartográfica,
+// a paleta petróleo + verde mineral e a navegação orientada à evidência.
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -28,7 +30,6 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider
         defaultTheme="light"
-        // switchable
       >
         <TooltipProvider>
           <Toaster />
