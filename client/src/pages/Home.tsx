@@ -1,6 +1,7 @@
 // Regularizando / Observatório Terra: landing editorial-cartográfica para EHS, ESG
 // e engenharia ambiental. Evidência primeiro, assimetria intencional e microcopy operacional.
 import { useState } from "react";
+import { Link, useLocation } from "wouter";
 import {
   ArrowDownRight,
   ArrowRight,
@@ -69,6 +70,7 @@ function AppLogo({ compact = false }: { compact?: boolean }) {
 }
 
 export default function Home() {
+  const [, setLocation] = useLocation();
   const [activeModule, setActiveModule] = useState<ModuleKey>("radar");
   const [menuOpen, setMenuOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
@@ -89,14 +91,14 @@ export default function Home() {
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           <nav className={`main-nav ${menuOpen ? "main-nav--open" : ""}`} aria-label="Navegação principal">
-            <a href="#sistema" onClick={() => setMenuOpen(false)}>O sistema</a>
-            <a href="#modulos" onClick={() => setMenuOpen(false)}>Módulos</a>
-            <a href="#territorio" onClick={() => setMenuOpen(false)}>Território</a>
-            <a href="#governanca" onClick={() => setMenuOpen(false)}>Governança</a>
+            <Link href="/produto" onClick={() => setMenuOpen(false)}>Produto</Link>
+            <Link href="/casos-de-uso" onClick={() => setMenuOpen(false)}>Casos de uso</Link>
+            <Link href="/piloto-telecom" onClick={() => setMenuOpen(false)}>Piloto telecom</Link>
+            <Link href="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
           </nav>
           <div className="header-actions">
-            <a className="text-link" href="#contato">Falar com a equipe <ArrowRight size={15} /></a>
-            <button className="button button--nav" type="button" onClick={() => setDemoOpen(true)}>Ver demonstração</button>
+            <Link className="text-link" href="/piloto-telecom">Planejar piloto <ArrowRight size={15} /></Link>
+            <button className="button button--nav" type="button" onClick={() => setLocation("/dashboard")}>Começar agora</button>
           </div>
         </div>
       </header>
@@ -111,8 +113,8 @@ export default function Home() {
               <h1 id="hero-title">Do documento disperso à <em>decisão verificável.</em></h1>
               <p className="hero-lede">O Regularizando conecta licenciamento ambiental, EHS e ESG para que sua equipe encontre o risco antes que ele vire retrabalho.</p>
               <div className="hero-actions">
-                <button className="button button--mint" type="button" onClick={() => setDemoOpen(true)}>Explorar o sistema <ArrowDownRight size={17} /></button>
-                <a className="button button--ghost-light" href="#modulos">Conhecer os módulos</a>
+                <button className="button button--mint" type="button" onClick={() => setLocation("/dashboard")}>Começar agora <ArrowDownRight size={17} /></button>
+                <Link className="button button--ghost-light" href="/produto">Conhecer os módulos</Link>
               </div>
               <div className="hero-proof"><span><Check size={15} /> Rastreável por evidência</span><span><Check size={15} /> Revisão humana por padrão</span></div>
             </div>
@@ -128,7 +130,7 @@ export default function Home() {
                   return <div className="evidence-row" key={row.label}><span className={`evidence-icon evidence-icon--${row.tone}`}><Icon size={15} /></span><span className="evidence-copy"><strong>{row.label}</strong><small>{row.meta}</small></span><ArrowRight className="evidence-arrow" size={15} /></div>;
                 })}
               </div>
-              <button className="panel-link" type="button" onClick={() => setDemoOpen(true)}>Abrir demonstração do painel <ArrowRight size={15} /></button>
+              <button className="panel-link" type="button" onClick={() => setLocation("/dashboard")}>Abrir dashboard <ArrowRight size={15} /></button>
             </div>
           </div>
           <div className="hero-index" aria-hidden="true"><span>01</span><span className="hero-index-line" /><span>04</span></div>
@@ -147,6 +149,8 @@ export default function Home() {
           <div className="principles-row"><div><span className="principle-index">01</span><strong>Antecipar</strong><p>Encontre inconsistências antes do protocolo.</p></div><div><span className="principle-index">02</span><strong>Conectar</strong><p>Una campo, documento, métrica e mapa.</p></div><div><span className="principle-index">03</span><strong>Comprovar</strong><p>Leve cada número até sua evidência.</p></div></div>
         </section>
 
+        <section className="home-use-cases" aria-labelledby="home-cases-title"><div><p className="eyebrow">Cenários que orientam o produto</p><h2 id="home-cases-title">O mesmo sistema, aplicado a problemas que custam tempo e confiança.</h2></div><div className="home-use-cases__grid"><article><span>01</span><h3>Sites distribuídos</h3><p>Carteira de licenças, condicionantes e evidências amarrada ao código de cada ativo.</p><Link href="/casos-de-uso">Ver caso telecom <ArrowRight size={15} /></Link></article><article><span>02</span><h3>Obras e infraestrutura</h3><p>CAPA, inspeção e condicionante conectadas desde a frente de obra até a renovação.</p><Link href="/casos-de-uso">Ver caso de obra <ArrowRight size={15} /></Link></article><article><span>03</span><h3>ESG corporativo</h3><p>Cada indicador preserva período, unidade, fonte, meta e status de revisão.</p><Link href="/casos-de-uso">Ver caso ESG <ArrowRight size={15} /></Link></article></div><Link className="arrow-link" href="/casos-de-uso">Explorar todos os casos de uso <ArrowRight size={16} /></Link></section>
+
         <section className="modules-section" id="modulos" aria-labelledby="modules-title">
           <div className="section-heading"><div><p className="eyebrow eyebrow--light">As quatro camadas do produto</p><h2 id="modules-title">Um sistema que acompanha<br />o ciclo inteiro.</h2></div><span className="heading-note">Selecione uma frente<br />para ver o fluxo.</span></div>
           <div className="modules-layout">
@@ -160,14 +164,14 @@ export default function Home() {
             </div>
             <div className="module-detail" key={activeModule}>
               <div className={`module-detail__visual module-detail__visual--${activeModule}`}><div className="visual-media" role="img" aria-label={`Visual do módulo ${active.eyebrow.slice(5)}`} /><div className="visual-tag"><ActiveIcon size={14} /> Camada ativa</div></div>
-              <div className="module-detail__copy"><p className="eyebrow eyebrow--light">{active.eyebrow}</p><h3>{active.title}</h3><p>{active.body}</p><ul>{active.points.map((point) => <li key={point}><Check size={15} /> {point}</li>)}</ul><button className="arrow-link arrow-link--light" type="button" onClick={() => setDemoOpen(true)}>Ver esta camada em ação <ArrowRight size={16} /></button></div>
+              <div className="module-detail__copy"><p className="eyebrow eyebrow--light">{active.eyebrow}</p><h3>{active.title}</h3><p>{active.body}</p><ul>{active.points.map((point) => <li key={point}><Check size={15} /> {point}</li>)}</ul><button className="arrow-link arrow-link--light" type="button" onClick={() => setLocation("/dashboard")}>Ver esta camada em ação <ArrowRight size={16} /></button></div>
             </div>
           </div>
         </section>
 
         <section className="territory-section" id="territorio" aria-labelledby="territory-title">
           <div className="territory-visual"><div className="territory-media" role="img" aria-label="Ilustração cartográfica de camadas territoriais e uma área de projeto" /><span className="map-chip map-chip--top"><span className="map-chip-dot" /> Área de influência</span><span className="map-chip map-chip--bottom">Camadas ambientais <ChevronDown size={14} /></span></div>
-          <div className="territory-copy"><p className="eyebrow">Contexto que muda a decisão</p><h2 id="territory-title">O território também é uma evidência.</h2><p>Antes de abrir uma frente de trabalho, entenda o que existe ao redor: unidades de conservação, recursos hídricos, uso do solo, comunidades e sobreposições que alteram o caminho do licenciamento.</p><div className="territory-stats"><div><strong>01</strong><span>mapa de contexto</span></div><div><strong>∞</strong><span>camadas combináveis</span></div><div><strong>360°</strong><span>visão do projeto</span></div></div><a className="arrow-link" href="#contato">Conectar meu contexto territorial <ArrowRight size={16} /></a></div>
+          <div className="territory-copy"><p className="eyebrow">Contexto que muda a decisão</p><h2 id="territory-title">O território também é uma evidência.</h2><p>Antes de abrir uma frente de trabalho, entenda o que existe ao redor: unidades de conservação, recursos hídricos, uso do solo, comunidades e sobreposições que alteram o caminho do licenciamento.</p><div className="territory-stats"><div><strong>01</strong><span>mapa de contexto</span></div><div><strong>∞</strong><span>camadas combináveis</span></div><div><strong>360°</strong><span>visão do projeto</span></div></div><Link className="arrow-link" href="/piloto-telecom">Conectar meu contexto territorial <ArrowRight size={16} /></Link></div>
         </section>
 
         <section className="governance-section" id="governanca" aria-labelledby="governance-title">
@@ -175,12 +179,12 @@ export default function Home() {
           <div className="governance-grid"><div><p className="eyebrow">IA com responsabilidade</p><h2 id="governance-title">Velocidade para a triagem. <em>Critério para a decisão.</em></h2></div><div className="governance-copy"><p>A IA organiza documentos, sugere campos e aponta divergências. A equipe técnica revisa, aprova e mantém o contexto. Assim, automação não vira caixa-preta: cada resultado carrega fonte, confiança e responsável.</p><div className="governance-card"><div className="governance-card__icon"><Sparkles size={19} /></div><div><strong>Uma resposta nunca vem sozinha.</strong><p>Ela vem com evidência, versão e próxima ação.</p></div><span className="verified-pill"><Check size={13} /> auditável</span></div></div></div>
         </section>
 
-        <section className="cta-section" id="contato" aria-labelledby="cta-title"><div className="cta-map" aria-hidden="true" /><div className="cta-inner"><div className="cta-evidence"><div className="cta-evidence__top"><span>Próxima decisão</span><span>04 / 04</span></div><div className="cta-evidence__line"><span className="cta-evidence__marker"><Check size={14} /></span><div><strong>Contexto pronto para revisão</strong><small>Fontes, responsáveis e próximos passos conectados.</small></div></div><div className="cta-evidence__footer"><span className="verified-pill"><Check size={13} /> evidência verificada</span><ArrowRight size={15} /></div></div><div className="cta-copy"><p className="eyebrow eyebrow--light">O próximo passo começa no contexto certo</p><h2 id="cta-title">Pronto para deixar a conformidade mais inteligente?</h2><p>Conte como sua equipe trabalha hoje. O Regularizando ajuda a desenhar o primeiro fluxo de evidências.</p><button className="button button--mint" type="button" onClick={() => setDemoOpen(true)}>Conversar sobre o meu cenário <ArrowRight size={17} /></button></div></div></section>
+        <section className="cta-section" id="contato" aria-labelledby="cta-title"><div className="cta-map" aria-hidden="true" /><div className="cta-inner"><div className="cta-evidence"><div className="cta-evidence__top"><span>Próxima decisão</span><span>04 / 04</span></div><div className="cta-evidence__line"><span className="cta-evidence__marker"><Check size={14} /></span><div><strong>Contexto pronto para revisão</strong><small>Fontes, responsáveis e próximos passos conectados.</small></div></div><div className="cta-evidence__footer"><span className="verified-pill"><Check size={13} /> evidência verificada</span><ArrowRight size={15} /></div></div><div className="cta-copy"><p className="eyebrow eyebrow--light">O próximo passo começa no contexto certo</p><h2 id="cta-title">Pronto para deixar a conformidade mais inteligente?</h2><p>Comece configurando o seu espaço de trabalho, depois transforme uma rotina real em um piloto com dados rastreáveis.</p><button className="button button--mint" type="button" onClick={() => setLocation("/piloto-telecom")}>Planejar meu piloto <ArrowRight size={17} /></button></div></div></section>
       </main>
 
       <footer className="site-footer"><AppLogo compact /><p>Inteligência para decisões ambientais mais confiáveis.</p><div className="footer-meta"><span>© 2026 Regularizando</span><span>Feito para EHS, ESG e engenharia ambiental</span></div></footer>
 
-      {demoOpen && <div className="modal-backdrop" role="presentation" onClick={() => setDemoOpen(false)}><div className="demo-modal" role="dialog" aria-modal="true" aria-labelledby="demo-title" onClick={(event) => event.stopPropagation()}><button className="modal-close" type="button" aria-label="Fechar demonstração" onClick={() => setDemoOpen(false)}><X size={18} /></button><div className="modal-icon"><Radar size={20} /></div><p className="eyebrow">Demonstração guiada</p><h2 id="demo-title">Veja o Regularizando pensando junto com sua equipe.</h2><p>Esta versão apresenta a lógica do produto. O próximo passo é mapear uma rotina real de EHS, ESG ou licenciamento para transformar em um primeiro fluxo.</p><a className="button button--nav button--full" href="mailto:contato@regularizando.eco?subject=Quero conhecer o Regularizando">Solicitar conversa <ArrowRight size={16} /></a><button className="modal-secondary" type="button" onClick={() => setDemoOpen(false)}>Continuar explorando o site</button></div></div>}
+      {demoOpen && <div className="modal-backdrop" role="presentation" onClick={() => setDemoOpen(false)}><div className="demo-modal" role="dialog" aria-modal="true" aria-labelledby="demo-title" onClick={(event) => event.stopPropagation()}><button className="modal-close" type="button" aria-label="Fechar demonstração" onClick={() => setDemoOpen(false)}><X size={18} /></button><div className="modal-icon"><Radar size={20} /></div><p className="eyebrow">Demonstração guiada</p><h2 id="demo-title">Veja o Regularizando pensando junto com sua equipe.</h2><p>O caminho agora é direto: entre no dashboard, crie sua organização e cadastre o primeiro ativo ou licença.</p><button className="button button--nav button--full" type="button" onClick={() => { setDemoOpen(false); setLocation("/dashboard"); }}>Acessar o dashboard <ArrowRight size={16} /></button><button className="modal-secondary" type="button" onClick={() => setDemoOpen(false)}>Continuar explorando o site</button></div></div>}
     </div>
   );
 }
