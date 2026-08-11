@@ -11,6 +11,7 @@ import {
   organizationInvites,
   organizationMembers,
   organizations,
+  pilotRequests,
   reviewRequests,
   sites,
   users,
@@ -54,6 +55,13 @@ export async function createOrganizationForUser(input: { name: string; slug: str
     await tx.insert(organizationMembers).values({ organizationId, userId: input.userId, role: "owner" });
     return (await tx.select().from(organizations).where(eq(organizations.id, organizationId)).limit(1))[0];
   });
+}
+
+export async function createPilotRequest(input: typeof pilotRequests.$inferInsert) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const result = await db.insert(pilotRequests).values(input);
+  return Number(result[0].insertId);
 }
 
 export async function getDashboardData(organizationId: number) {

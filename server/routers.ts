@@ -18,6 +18,7 @@ import {
   createLicense,
   createOrganizationForUser,
   createOrganizationInvite,
+  createPilotRequest,
   createReviewRequest,
   createSite,
   decideReviewRequest,
@@ -47,6 +48,12 @@ export const appRouter = router({
   organization: router({
     current: protectedProcedure.query(({ ctx }) => getOrganizationForUser(ctx.user.id)),
     create: protectedProcedure.input(organizationInput).mutation(async ({ ctx, input }) => { const existing = await getOrganizationForUser(ctx.user.id); if (existing) return existing.organization; return createOrganizationForUser({ ...input, slug: `${makeOrganizationSlug(input.name)}-${randomUUID().slice(0, 6)}`, userId: ctx.user.id }); }),
+  }),
+  pilot: router({
+    request: publicProcedure.input(z.object({ name: z.string().trim().min(2).max(160), email: z.string().trim().email().max(320), company: z.string().trim().min(2).max(180), role: z.string().trim().max(120).optional(), sector: z.enum(["telecom", "infraestrutura", "industria", "consultoria", "outro"]), portfolioSize: z.string().trim().max(80).optional(), challenge: z.string().trim().min(10).max(2000).optional(), consent: z.literal(true) })).mutation(async ({ input }) => {
+      const id = await createPilotRequest({ name: input.name, email: input.email.toLowerCase(), company: input.company, role: input.role || null, sector: input.sector, portfolioSize: input.portfolioSize || null, challenge: input.challenge || null, consentedAt: new Date() });
+      return { id, success: true } as const;
+    }),
   }),
   dashboard: router({ overview: protectedProcedure.query(async ({ ctx }) => { const context = await getOrganizationForUser(ctx.user.id); return context ? { organization: context.organization, membership: context.membership, data: await getDashboardData(context.organization.id) } : { organization: null, data: null }; }) }),
   sites: router({ create: protectedProcedure.input(z.object({ name: z.string().min(3).max(180), code: z.string().min(2).max(80), city: z.string().max(100).optional(), state: z.string().length(2).optional(), operationalStatus: z.enum(["operacao", "implantacao", "manutencao", "desmobilizado"]).default("operacao"), riskLevel: z.enum(["baixo", "moderado", "alto", "critico"]).default("moderado") })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); return createSite({ ...input, organizationId: org.organization.id }); }) }),

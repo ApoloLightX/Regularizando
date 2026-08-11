@@ -3,7 +3,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -15,11 +15,15 @@ import Evidences from "./pages/Evidences";
 import PilotTelecom from "./pages/PilotTelecom";
 import Product from "./pages/Product";
 import UseCases from "./pages/UseCases";
+import DocumentHead from "./components/DocumentHead";
+import Security from "./pages/Security";
+import MarketingFooter from "./components/MarketingFooter";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
+  const [location] = useLocation();
+  const appendFooter = ["/casos-de-uso", "/piloto-telecom", "/seguranca", "/contato"].includes(location);
   return (
-    <Switch>
+    <><Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/produto"} component={Product} />
       <Route path={"/casos-de-uso"} component={UseCases} />
@@ -30,10 +34,11 @@ function Router() {
       <Route path={"/equipe"} component={Team} />
       <Route path={"/convites/:token"} component={InviteAccept} />
       <Route path={"/contato"} component={Contact} />
+      <Route path={"/seguranca"} component={Security} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
-    </Switch>
+    </Switch>{appendFooter ? <MarketingFooter /> : null}</>
   );
 }
 
@@ -50,6 +55,7 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
+          <DocumentHead />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

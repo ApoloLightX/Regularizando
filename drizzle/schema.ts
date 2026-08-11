@@ -230,6 +230,20 @@ export const reviewRequests = mysqlTable("reviewRequests", {
   foreignKey({ columns: [table.reviewerUserId], foreignColumns: [users.id], name: "reviewer_user_fk" }).onDelete("set null"),
 ]);
 
+/** Solicitações comerciais públicas: não contém documentos nem dados operacionais do cliente. */
+export const pilotRequests = mysqlTable("pilotRequests", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 160 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  company: varchar("company", { length: 180 }).notNull(),
+  role: varchar("role", { length: 120 }),
+  sector: mysqlEnum("sector", ["telecom", "infraestrutura", "industria", "consultoria", "outro"]).notNull(),
+  portfolioSize: varchar("portfolioSize", { length: 80 }),
+  challenge: text("challenge"),
+  consentedAt: timestamp("consentedAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [index("pilot_request_created_idx").on(table.createdAt), index("pilot_request_email_idx").on(table.email)]);
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Organization = typeof organizations.$inferSelect;

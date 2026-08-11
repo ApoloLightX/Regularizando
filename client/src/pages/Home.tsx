@@ -98,12 +98,13 @@ export default function Home() {
           <nav className={`main-nav ${menuOpen ? "main-nav--open" : ""}`} aria-label="Navegação principal">
             <Link href="/produto" onClick={() => setMenuOpen(false)}>Produto</Link>
             <Link href="/casos-de-uso" onClick={() => setMenuOpen(false)}>Casos de uso</Link>
+            <Link href="/seguranca" onClick={() => setMenuOpen(false)}>Segurança</Link>
             <Link href="/piloto-telecom" onClick={() => setMenuOpen(false)}>Piloto telecom</Link>
-            <Link href="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+            <Link href="/dashboard" onClick={() => setMenuOpen(false)}>Entrar</Link>
           </nav>
           <div className="header-actions">
-            <Link className="text-link" href="/piloto-telecom">Planejar piloto <ArrowRight size={15} /></Link>
-            <button className="button button--nav" type="button" onClick={() => setLocation("/dashboard")}>Começar agora</button>
+            <Link className="text-link" href="/dashboard">Entrar <ArrowRight size={15} /></Link>
+            <Link className="button button--nav" href="/contato">Solicitar piloto</Link>
           </div>
         </div>
       </header>
@@ -114,14 +115,14 @@ export default function Home() {
           <div className="hero__grain" aria-hidden="true" />
           <div className="hero-inner">
             <div className="hero-copy">
-              <p className="eyebrow eyebrow--light"><span className="eyebrow-dot" /> Sistema operacional de evidências ambientais</p>
-              <h1 id="hero-title">Do documento disperso à <em>decisão verificável.</em></h1>
-              <p className="hero-lede">O Regularizando conecta licenciamento ambiental, EHS e ESG para que sua equipe encontre o risco antes que ele vire retrabalho.</p>
+              <p className="eyebrow eyebrow--light"><span className="eyebrow-dot" /> Inteligência ambiental verificável</p>
+              <h1 id="hero-title">Gestão ambiental sem <em>planilhas dispersas.</em></h1>
+              <p className="hero-lede">Centralize licenças, condicionantes, responsáveis e documentos. O Regularizando identifica pendências e organiza evidências para a revisão do profissional responsável.</p>
               <div className="hero-actions">
-                <button className="button button--mint" type="button" onClick={() => setLocation("/dashboard")}>Começar agora <ArrowDownRight size={17} /></button>
-                <Link className="button button--ghost-light" href="/produto">Conhecer os módulos</Link>
+                <Link className="button button--mint" href="/contato">Solicitar piloto <ArrowDownRight size={17} /></Link>
+                <button className="button button--ghost-light" type="button" onClick={() => setDemoOpen(true)}>Ver demonstração</button>
               </div>
-              <div className="hero-proof"><span><Check size={15} /> Rastreável por evidência</span><span><Check size={15} /> Revisão humana por padrão</span></div>
+              <div className="hero-proof"><span><Check size={15} /> IA organiza. O profissional valida.</span><span><Check size={15} /> Cada decisão permanece rastreável.</span></div>
             </div>
 
             <div className="hero-panel" aria-label="Prévia do painel Regularizando">
@@ -142,7 +143,20 @@ export default function Home() {
         </section>
 
         <section className="signal-strip" aria-label="Áreas conectadas">
-          <div className="signal-inner"><span className="signal-label">Uma camada de inteligência para</span><span>Licenciamento</span><i /><span>EHS</span><i /><span>ESG</span><i /><span>Engenharia ambiental</span></div>
+          <div className="signal-inner"><span className="signal-label">Comece por</span><span>Licenciamento</span><i /><span>e expanda para</span><i /><span>EHS</span><i /><span>ESG</span><i /><span>Território</span></div>
+        </section>
+
+        <section className="proof-demo" id="demonstracao" aria-labelledby="proof-demo-title">
+          <div className="proof-demo__heading"><p className="eyebrow">Do documento à evidência auditável</p><h2 id="proof-demo-title">Veja a pendência antes que ela vire retrabalho.</h2><p>O produto transforma uma obrigação dispersa em uma fila clara de verificação, responsabilidade e decisão.</p></div>
+          <div className="proof-demo__workspace">
+            <div className="proof-demo__table" role="table" aria-label="Prévia de condicionantes ambientais">
+              <div className="proof-demo__row proof-demo__row--head" role="row"><span>Condicionante</span><span>Status</span><span>Prazo</span><span>Evidência</span><span>Responsável</span></div>
+              <div className="proof-demo__row" role="row"><strong>Monitoramento hídrico</strong><span className="status-dot status-dot--warn">Atenção</span><span>17 dias</span><span>2 / 3</span><span>Marina</span></div>
+              <div className="proof-demo__row" role="row"><strong>Relatório semestral</strong><span className="status-dot status-dot--review">Em revisão</span><span>41 dias</span><span>5 / 5</span><span>Gabriel</span></div>
+              <div className="proof-demo__row" role="row"><strong>Ruído ambiental</strong><span className="status-dot status-dot--open">Pendente</span><span>8 dias</span><span>0 / 2</span><span>Carlos</span></div>
+            </div>
+            <aside className="proof-demo__finding"><span className="finding-label"><CircleAlert size={14} /> Pendência identificada</span><h3>O laudo anexado não contém o parâmetro DBO exigido pelo requisito.</h3><dl><div><dt>Fonte identificada</dt><dd>Página 14 · Licença ambiental</dd></div><div><dt>Confiança</dt><dd>94%</dd></div><div><dt>Decisão</dt><dd>Aguardando revisão</dd></div></dl><Link href="/produto" className="arrow-link">Entender o fluxo verificável <ArrowRight size={16} /></Link></aside>
+          </div>
         </section>
 
         <section className="intro-section" id="sistema" aria-labelledby="intro-title">
@@ -181,10 +195,10 @@ export default function Home() {
 
         <section className="governance-section" id="governanca" aria-labelledby="governance-title">
           <div className="section-number section-number--dark">02 <span>Governança</span></div>
-          <div className="governance-grid"><div><p className="eyebrow">IA com responsabilidade</p><h2 id="governance-title">Velocidade para a triagem. <em>Critério para a decisão.</em></h2></div><div className="governance-copy"><p>A IA organiza documentos, sugere campos e aponta divergências. A equipe técnica revisa, aprova e mantém o contexto. Assim, automação não vira caixa-preta: cada resultado carrega fonte, confiança e responsável.</p><div className="governance-card"><div className="governance-card__icon"><Sparkles size={19} /></div><div><strong>Uma resposta nunca vem sozinha.</strong><p>Ela vem com evidência, versão e próxima ação.</p></div><span className="verified-pill"><Check size={13} /> auditável</span></div></div></div>
+          <div className="governance-grid"><div><p className="eyebrow">IA com responsabilidade</p><h2 id="governance-title">IA que você consegue <em>auditar.</em></h2></div><div className="governance-copy"><p>A IA organiza documentos, sugere campos e aponta divergências. A equipe técnica revisa, aprova e mantém o contexto. Assim, automação não vira caixa-preta: cada resultado carrega fonte, confiança e responsável.</p><div className="audit-trail"><span>Fonte original</span><ArrowRight size={14} /><span>Requisito relacionado</span><ArrowRight size={14} /><span>Pendência detectada</span><ArrowRight size={14} /><span>Revisão humana</span><ArrowRight size={14} /><span>Decisão e histórico</span></div><div className="governance-card"><div className="governance-card__icon"><Sparkles size={19} /></div><div><strong>Uma resposta nunca vem sozinha.</strong><p>Ela vem com evidência, versão e próxima ação.</p></div><span className="verified-pill"><Check size={13} /> auditável</span></div></div></div>
         </section>
 
-        <section className="cta-section" id="contato" aria-labelledby="cta-title"><div className="cta-map" aria-hidden="true" /><div className="cta-inner"><div className="cta-evidence"><div className="cta-evidence__top"><span>Próxima decisão</span><span>04 / 04</span></div><div className="cta-evidence__line"><span className="cta-evidence__marker"><Check size={14} /></span><div><strong>Contexto pronto para revisão</strong><small>Fontes, responsáveis e próximos passos conectados.</small></div></div><div className="cta-evidence__footer"><span className="verified-pill"><Check size={13} /> evidência verificada</span><ArrowRight size={15} /></div></div><div className="cta-copy"><p className="eyebrow eyebrow--light">O próximo passo começa no contexto certo</p><h2 id="cta-title">Pronto para deixar a conformidade mais inteligente?</h2><p>Comece configurando o seu espaço de trabalho, depois transforme uma rotina real em um piloto com dados rastreáveis.</p><button className="button button--mint" type="button" onClick={() => setLocation("/piloto-telecom")}>Planejar meu piloto <ArrowRight size={17} /></button></div></div></section>
+        <section className="cta-section" id="contato" aria-labelledby="cta-title"><div className="cta-map" aria-hidden="true" /><div className="cta-inner"><div className="cta-evidence"><div className="cta-evidence__top"><span>Próxima decisão</span><span>04 / 04</span></div><div className="cta-evidence__line"><span className="cta-evidence__marker"><Check size={14} /></span><div><strong>Contexto pronto para revisão</strong><small>Fontes, responsáveis e próximos passos conectados.</small></div></div><div className="cta-evidence__footer"><span className="verified-pill"><Check size={13} /> evidência verificada</span><ArrowRight size={15} /></div></div><div className="cta-copy"><p className="eyebrow eyebrow--light">Comece por uma obrigação real</p><h2 id="cta-title">Transforme sua primeira rotina em um piloto verificável.</h2><p>Selecione uma carteira de licenças, condicionantes ou sites e descubra onde estão os prazos, evidências e responsáveis que exigem atenção.</p><Link className="button button--mint" href="/contato">Solicitar piloto <ArrowRight size={17} /></Link></div></div></section>
       </main>
 
       <footer className="site-footer"><AppLogo compact /><p>Inteligência para decisões ambientais mais confiáveis.</p><div className="footer-meta"><span>© 2026 Regularizando</span><span>Feito para EHS, ESG e engenharia ambiental</span></div></footer>

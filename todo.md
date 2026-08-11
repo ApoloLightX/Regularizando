@@ -27,3 +27,22 @@
 - [x] Criar um SKILL.md de continuidade com contexto de produto, arquitetura, regras de segurança e fluxos do Regularizando.
 - [x] Remover resíduos de template e fornecer conteúdo semântico revisável no HTML inicial da landing page.
 - [x] Validar que revisores sem JavaScript conseguem identificar produto, público, funcionalidades e caminhos principais.
+- [x] Verificar o HTML entregue no domínio público e resolver divergência de cache ou versão para revisores externos.
+- [x] Reposicionar a homepage com licenciamento ambiental como porta de entrada e CTA dominante de piloto.
+- [x] Inserir uma demonstração concreta do fluxo documento, requisito, pendência, responsável, evidência e aprovação.
+- [x] Criar uma seção de segurança e governança somente com controles tecnicamente verificáveis.
+- [x] Reestruturar a página de piloto telecom como proposta comercial específica.
+- [x] Organizar casos de uso por persona e setor comprador.
+- [x] Implementar conteúdo, title, descrição, canonical e fallback próprios para cada rota pública.
+- [x] Aplicar noindex e resposta adequada às áreas privadas de dashboard e evidências.
+- [x] Adicionar artefatos básicos de descoberta: robots.txt, sitemap.xml e favicon.
+- [x] Validar páginas públicas sem JavaScript, navegação, acessibilidade e responsividade.
+- [x] Reestruturar `/casos-de-uso` com blocos explícitos para Gestor ambiental, EHS/HSE, ESG e Diretoria/Auditoria.
+- [x] Executar e registrar validação de acessibilidade das páginas públicas: teclado, foco, landmarks, contraste e formulários.
+- [x] Executar auditoria de acessibilidade das páginas públicas com checklist explícito de teclado, foco, landmarks, contraste e links/CTAs.
+- [x] Registrar a condição de formulários públicos e seus estados de erro para a jornada de solicitação de piloto.
+- [x] Adicionar footer semântico às rotas públicas e reforçar a cobertura de landmarks.
+- [x] Registrar e testar uma auditoria de acessibilidade de teclado, foco, contraste, links/CTAs e estados do formulário público.
+- [x] Executar e registrar uma auditoria explícita de teclado, ordem de foco, contraste e comportamento dos CTAs públicos.
+- [x] Expandir a auditoria headless até os CTAs principais e validar foco, destino e contraste dos controles interativos.
+- [x] Assegurar por teste o destino esperado dos CTAs e o contraste de seus estados normal, foco e desabilitado.
