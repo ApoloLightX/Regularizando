@@ -24,3 +24,6 @@
 - [x] Testar autorização, aceitação de convite, atribuições e fluxos de erro.
 - [x] Testar os procedimentos tRPC de criação, revogação, aceite e visualização de convites.
 - [x] Testar os procedimentos tRPC de atribuição de CAPA e revisão, incluindo falhas de permissão.
+- [x] Criar um SKILL.md de continuidade com contexto de produto, arquitetura, regras de segurança e fluxos do Regularizando.
+- [x] Remover resíduos de template e fornecer conteúdo semântico revisável no HTML inicial da landing page.
+- [x] Validar que revisores sem JavaScript conseguem identificar produto, público, funcionalidades e caminhos principais.
