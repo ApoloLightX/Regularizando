@@ -9,6 +9,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Contact from "./pages/Contact";
+import Team from "./pages/Team";
+import InviteAccept from "./pages/InviteAccept";
 import Evidences from "./pages/Evidences";
 import PilotTelecom from "./pages/PilotTelecom";
 import Product from "./pages/Product";
@@ -25,6 +27,8 @@ function Router() {
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/comecar"} component={Dashboard} />
       <Route path={"/evidencias"} component={Evidences} />
+      <Route path={"/equipe"} component={Team} />
+      <Route path={"/convites/:token"} component={InviteAccept} />
       <Route path={"/contato"} component={Contact} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

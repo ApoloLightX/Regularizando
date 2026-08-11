@@ -16,3 +16,11 @@
 - [x] Adicionar a rota navegável `/contato` para orientar o início de um piloto.
 - [x] Testar rejeições de upload, referência cross-tenant, ausência de organização e revisão sem perfil permitido.
 - [x] Adicionar testes automatizados para as políticas de escopo organizacional e aprovação.
+- [x] Definir papéis, permissões e ciclo de vida para convites por organização.
+- [x] Criar schema, migração e APIs protegidas para convites de equipe.
+- [x] Permitir atribuição de membros específicos a CAPAs e aprovações pendentes.
+- [x] Criar uma área de equipe com criação, aceitação e acompanhamento de convites.
+- [x] Criar seletores de responsável em CAPAs e na fila de aprovação de evidências.
+- [x] Testar autorização, aceitação de convite, atribuições e fluxos de erro.
+- [x] Testar os procedimentos tRPC de criação, revogação, aceite e visualização de convites.
+- [x] Testar os procedimentos tRPC de atribuição de CAPA e revisão, incluindo falhas de permissão.

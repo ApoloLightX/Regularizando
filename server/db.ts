@@ -8,6 +8,7 @@ import {
   incidents,
   InsertUser,
   licenses,
+  organizationInvites,
   organizationMembers,
   organizations,
   reviewRequests,
@@ -15,7 +16,7 @@ import {
   users,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
-import { rejectCrossTenantReference } from "./regularizando.policy";
+import { canDecideAssignedReview, rejectCrossTenantReference } from "./regularizando.policy";
 
 let database: ReturnType<typeof drizzle> | null = null;
 
@@ -106,8 +107,86 @@ export async function decideReviewRequest(input: { reviewId: number; organizatio
   if (!db) throw new Error("Banco de dados indisponível");
   const review = (await db.select().from(reviewRequests).where(and(eq(reviewRequests.id, input.reviewId), eq(reviewRequests.organizationId, input.organizationId))).limit(1))[0];
   if (!review || review.status !== "pendente") throw new Error("A solicitação de revisão não está disponível.");
+  if (!canDecideAssignedReview(review.reviewerUserId, input.reviewerUserId)) throw new Error("Esta aprovação está atribuída a outro revisor.");
   await db.transaction(async (tx) => {
     await tx.update(reviewRequests).set({ status: input.status, note: input.note ?? null, reviewerUserId: input.reviewerUserId, reviewedAt: new Date() }).where(eq(reviewRequests.id, input.reviewId));
     await tx.update(evidences).set({ reviewStatus: input.status === "aprovada" ? "verificada" : "rejeitada" }).where(and(eq(evidences.id, review.evidenceId), eq(evidences.organizationId, input.organizationId)));
   });
+}
+
+export async function getTeamOverview(organizationId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const [members, invites] = await Promise.all([
+    db.select({ membership: organizationMembers, user: { id: users.id, name: users.name, email: users.email } }).from(organizationMembers).innerJoin(users, eq(organizationMembers.userId, users.id)).where(eq(organizationMembers.organizationId, organizationId)).orderBy(desc(organizationMembers.createdAt)),
+    db.select().from(organizationInvites).where(eq(organizationInvites.organizationId, organizationId)).orderBy(desc(organizationInvites.createdAt)),
+  ]);
+  return { members, invites };
+}
+
+export async function getMemberOfOrganization(organizationId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  return (await db.select().from(organizationMembers).where(and(eq(organizationMembers.organizationId, organizationId), eq(organizationMembers.userId, userId))).limit(1))[0];
+}
+
+export async function getMemberOfOrganizationByEmail(organizationId: number, email: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  return (await db.select({ membership: organizationMembers, user: users }).from(organizationMembers).innerJoin(users, eq(organizationMembers.userId, users.id)).where(and(eq(organizationMembers.organizationId, organizationId), eq(users.email, email))).limit(1))[0];
+}
+
+export async function createOrganizationInvite(input: typeof organizationInvites.$inferInsert) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  return Number((await db.insert(organizationInvites).values(input))[0].insertId);
+}
+
+export async function getInviteByHash(tokenHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  return (await db.select({ invite: organizationInvites, organization: organizations }).from(organizationInvites).innerJoin(organizations, eq(organizationInvites.organizationId, organizations.id)).where(eq(organizationInvites.tokenHash, tokenHash)).limit(1))[0];
+}
+
+export async function revokeOrganizationInvite(input: { inviteId: number; organizationId: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const result = await db.update(organizationInvites).set({ status: "revogado" }).where(and(eq(organizationInvites.id, input.inviteId), eq(organizationInvites.organizationId, input.organizationId), eq(organizationInvites.status, "pendente")));
+  if (result[0].affectedRows !== 1) throw new Error("O convite não está disponível para revogação.");
+}
+
+export async function acceptOrganizationInvite(input: { tokenHash: string; userId: number; email: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const item = await getInviteByHash(input.tokenHash);
+  if (!item) throw new Error("Convite inválido.");
+  if (item.invite.status !== "pendente" || item.invite.expiresAt.getTime() < Date.now()) throw new Error("Este convite expirou ou já não está disponível.");
+  if (item.invite.email !== input.email) throw new Error("Este convite foi emitido para outro e-mail.");
+  await db.transaction(async (tx) => {
+    await tx.insert(organizationMembers).values({ organizationId: item.invite.organizationId, userId: input.userId, role: item.invite.role }).onDuplicateKeyUpdate({ set: { role: item.invite.role } });
+    await tx.update(organizationInvites).set({ status: "aceito", acceptedByUserId: input.userId, acceptedAt: new Date() }).where(eq(organizationInvites.id, item.invite.id));
+  });
+  return item.organization;
+}
+
+export async function assignCapaResponsible(input: { capaId: number; organizationId: number; responsibleUserId: number | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  if (input.responsibleUserId) {
+    const member = await getMemberOfOrganization(input.organizationId, input.responsibleUserId);
+    if (!member) throw new Error("O responsável precisa ser membro da organização.");
+  }
+  const result = await db.update(capaActions).set({ responsibleUserId: input.responsibleUserId }).where(and(eq(capaActions.id, input.capaId), eq(capaActions.organizationId, input.organizationId)));
+  if (result[0].affectedRows !== 1) throw new Error("A CAPA não pertence à organização atual.");
+}
+
+export async function assignReviewResponsible(input: { reviewId: number; organizationId: number; reviewerUserId: number | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  if (input.reviewerUserId) {
+    const member = await getMemberOfOrganization(input.organizationId, input.reviewerUserId);
+    if (!member || !["owner", "admin", "reviewer"].includes(member.role)) throw new Error("Selecione um membro com permissão de revisão.");
+  }
+  const result = await db.update(reviewRequests).set({ reviewerUserId: input.reviewerUserId }).where(and(eq(reviewRequests.id, input.reviewId), eq(reviewRequests.organizationId, input.organizationId), eq(reviewRequests.status, "pendente")));
+  if (result[0].affectedRows !== 1) throw new Error("A aprovação não está disponível para atribuição.");
 }

@@ -1,6 +1,6 @@
 // Regularizando / Observatório Terra: landing editorial-cartográfica para EHS, ESG
 // e engenharia ambiental. Evidência primeiro, assimetria intencional e microcopy operacional.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   ArrowDownRight,
@@ -71,6 +71,11 @@ function AppLogo({ compact = false }: { compact?: boolean }) {
 
 export default function Home() {
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    const pendingInvite = sessionStorage.getItem("regularizando-pending-invite");
+    if (pendingInvite) setLocation(`/convites/${pendingInvite}`);
+  }, [setLocation]);
   const [activeModule, setActiveModule] = useState<ModuleKey>("radar");
   const [menuOpen, setMenuOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);

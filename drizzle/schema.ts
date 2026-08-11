@@ -49,6 +49,27 @@ export const organizationMembers = mysqlTable("organizationMembers", {
   foreignKey({ columns: [table.userId], foreignColumns: [users.id], name: "member_user_fk" }).onDelete("cascade"),
 ]);
 
+/** Convites são destinados a um e-mail específico; somente o hash do token é persistido. */
+export const organizationInvites = mysqlTable("organizationInvites", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  role: mysqlEnum("role", ["admin", "analyst", "reviewer", "viewer"]).default("analyst").notNull(),
+  tokenHash: varchar("tokenHash", { length: 64 }).notNull().unique(),
+  status: mysqlEnum("status", ["pendente", "aceito", "revogado", "expirado"]).default("pendente").notNull(),
+  createdByUserId: int("createdByUserId").notNull(),
+  acceptedByUserId: int("acceptedByUserId"),
+  acceptedAt: timestamp("acceptedAt"),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  index("invite_organization_status_idx").on(table.organizationId, table.status),
+  index("invite_email_status_idx").on(table.email, table.status),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "invite_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.createdByUserId], foreignColumns: [users.id], name: "invite_creator_fk" }),
+  foreignKey({ columns: [table.acceptedByUserId], foreignColumns: [users.id], name: "invite_acceptor_fk" }).onDelete("set null"),
+]);
+
 /** Unidades distribuídas: sites de telecom, obras, estações ou empreendimentos. */
 export const sites = mysqlTable("sites", {
   id: int("id").autoincrement().primaryKey(),
@@ -119,6 +140,7 @@ export const capaActions = mysqlTable("capaActions", {
   priority: mysqlEnum("priority", ["baixa", "media", "alta", "critica"]).default("media").notNull(),
   status: mysqlEnum("status", ["aberta", "em_andamento", "aguardando_validacao", "concluida"]).default("aberta").notNull(),
   ownerName: varchar("ownerName", { length: 160 }),
+  responsibleUserId: int("responsibleUserId"),
   dueDate: timestamp("dueDate"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -127,6 +149,7 @@ export const capaActions = mysqlTable("capaActions", {
   index("capa_status_idx").on(table.status),
   foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "capa_organization_fk" }).onDelete("cascade"),
   foreignKey({ columns: [table.siteId], foreignColumns: [sites.id], name: "capa_site_fk" }).onDelete("set null"),
+  foreignKey({ columns: [table.responsibleUserId], foreignColumns: [users.id], name: "capa_responsible_user_fk" }).onDelete("set null"),
 ]);
 
 export const incidents = mysqlTable("incidents", {
