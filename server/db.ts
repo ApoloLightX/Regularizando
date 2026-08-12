@@ -108,6 +108,13 @@ export async function createCapaAction(input: typeof capaActions.$inferInsert) {
 export async function createIncident(input: typeof incidents.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(incidents).values(input))[0].insertId); }
 export async function createEsgMetric(input: typeof esgMetrics.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(esgMetrics).values(input).onDuplicateKeyUpdate({ set: { value: input.value, target: input.target, unit: input.unit, sourceDescription: input.sourceDescription, status: input.status } }))[0].insertId); }
 export async function createEvidence(input: typeof evidences.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(evidences).values(input))[0].insertId); }
+export async function getEvidenceForOrganization(evidenceId: number, organizationId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const evidence = (await db.select().from(evidences).where(and(eq(evidences.id, evidenceId), eq(evidences.organizationId, organizationId))).limit(1))[0];
+  if (!evidence) throw new Error("A evidência não pertence à organização atual.");
+  return evidence;
+}
 export async function createReviewRequest(input: typeof reviewRequests.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(reviewRequests).values(input))[0].insertId); }
 
 export async function decideReviewRequest(input: { reviewId: number; organizationId: number; reviewerUserId: number; status: "aprovada" | "rejeitada"; note?: string }) {
