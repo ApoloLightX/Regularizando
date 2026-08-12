@@ -230,6 +230,23 @@ export const reviewRequests = mysqlTable("reviewRequests", {
   foreignKey({ columns: [table.reviewerUserId], foreignColumns: [users.id], name: "reviewer_user_fk" }).onDelete("set null"),
 ]);
 
+/** Eventos operacionais sensíveis, mantidos como trilha append-only por organização. */
+export const auditEvents = mysqlTable("auditEvents", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  actorUserId: int("actorUserId"),
+  action: varchar("action", { length: 96 }).notNull(),
+  resourceType: varchar("resourceType", { length: 64 }).notNull(),
+  resourceId: int("resourceId"),
+  metadata: text("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  index("audit_organization_created_idx").on(table.organizationId, table.createdAt),
+  index("audit_resource_idx").on(table.resourceType, table.resourceId),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "audit_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.actorUserId], foreignColumns: [users.id], name: "audit_actor_user_fk" }).onDelete("set null"),
+]);
+
 /** Solicitações comerciais públicas: não contém documentos nem dados operacionais do cliente. */
 export const pilotRequests = mysqlTable("pilotRequests", {
   id: int("id").autoincrement().primaryKey(),

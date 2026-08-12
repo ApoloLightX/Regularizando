@@ -18,6 +18,7 @@ const db = vi.hoisted(() => ({
   createSite: vi.fn(),
   decideReviewRequest: vi.fn(),
   getDashboardData: vi.fn(),
+  getEvidenceForOrganization: vi.fn(),
   getInviteByHash: vi.fn(),
   getMemberOfOrganizationByEmail: vi.fn(),
   getOrganizationForUser: vi.fn(),
@@ -26,9 +27,10 @@ const db = vi.hoisted(() => ({
 }));
 
 vi.mock("./db", () => db);
-vi.mock("./storage", () => ({ storagePut: vi.fn() }));
+vi.mock("./storage", () => ({ storagePut: vi.fn(), storageGetSignedUrl: vi.fn() }));
 
 import { appRouter } from "./routers";
+import { storageGetSignedUrl } from "./storage";
 
 const organization = { id: 7, name: "Operação EHS", slug: "operacao-ehs", sector: "telecom", createdAt: new Date(), updatedAt: new Date() };
 
@@ -54,6 +56,7 @@ describe("team and assignment procedures", () => {
     db.revokeOrganizationInvite.mockResolvedValue(undefined);
     db.assignCapaResponsible.mockResolvedValue(undefined);
     db.assignReviewResponsible.mockResolvedValue(undefined);
+    db.getEvidenceForOrganization.mockResolvedValue({ id: 90, organizationId: 7, fileKey: "organizations/7/licenca/arquivo.pdf" });
   });
 
   it("creates a scoped invitation URL and stores only a normalized email plus token hash", async () => {
@@ -97,5 +100,12 @@ describe("team and assignment procedures", () => {
     await expect(caller.team.createInvite({ email: "novo@empresa.com", role: "viewer", origin: "https://app.example" })).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(caller.capa.assignResponsible({ capaId: 44, responsibleUserId: 33 })).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(caller.reviews.assignResponsible({ reviewId: 55, reviewerUserId: 34 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("does not issue a download URL for an evidence outside the active organization", async () => {
+    const caller = appRouter.createCaller(context());
+    db.getEvidenceForOrganization.mockRejectedValue(new Error("A evidência não pertence à organização atual."));
+    await expect(caller.evidences.download({ evidenceId: 999 })).rejects.toThrow("não pertence à organização atual");
+    expect(storageGetSignedUrl).not.toHaveBeenCalled();
   });
 });

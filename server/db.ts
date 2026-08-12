@@ -1,6 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
+  auditEvents,
   capaActions,
   conditions,
   evidences,
@@ -114,6 +115,11 @@ export async function getEvidenceForOrganization(evidenceId: number, organizatio
   const evidence = (await db.select().from(evidences).where(and(eq(evidences.id, evidenceId), eq(evidences.organizationId, organizationId))).limit(1))[0];
   if (!evidence) throw new Error("A evidência não pertence à organização atual.");
   return evidence;
+}
+export async function createAuditEvent(input: typeof auditEvents.$inferInsert) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  return Number((await db.insert(auditEvents).values(input))[0].insertId);
 }
 export async function createReviewRequest(input: typeof reviewRequests.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(reviewRequests).values(input))[0].insertId); }
 
