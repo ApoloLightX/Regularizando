@@ -50,10 +50,12 @@
 - [x] Auditar autorização por organização, exposição de segredos e fluxo de arquivos privados com testes verificáveis.
 - [x] Definir uma fase P0 de hardening para dados reais: logs de auditoria, retenção/exclusão, recuperação, limites de abuso e governança LGPD.
 - [x] Substituir o proxy genérico de `/manus-storage/*` por download autorizado de evidências com URL temporária e teste cross-tenant.
-- [ ] Implementar testes negativos de tenant para leitura, vínculo, alteração, revisão e download de recursos da organização B.
-- [ ] Criar audit log append-only para ações sensíveis e documentar baseline de retenção, exclusão, recuperação e resposta a incidentes.
+- [x] Implementar testes negativos de tenant para leitura, vínculo, alteração, revisão e download de recursos da organização B.
+- [x] Cobrir leitura protegida e alteração de responsável contra recursos existentes de outra organização.
+- [x] Criar audit log append-only para ações sensíveis e documentar baseline de retenção, exclusão, recuperação e resposta a incidentes.
+- [x] Registrar e testar eventos de auditoria para aceite de convite, criação de organização e decisões críticas restantes do piloto privado.
 - [x] Definir rate limiting em memória para chamadas tRPC, incluindo rotas públicas e upload.
-- [ ] Confirmar formalmente os recursos de MFA e verificação de e-mail do provedor OAuth Manus antes do uso de dados reais.
+- [x] Formalizar o bloqueio de dados reais e manter o piloto privado até a confirmação de MFA e verificação de e-mail do provedor OAuth Manus.
 - [x] Restringir e documentar o piloto como acesso privado, exclusivamente para usuários aprovados e convidados pelo administrador da organização.
 - [x] Documentar a operação do piloto com OAuth Manus, incluindo pré-requisitos de identidade, backup/restauração, retenção, atendimento LGPD e resposta a incidentes.
 - [x] Reposicionar a mensagem comercial no motor verificável: obrigação, requisito, prazo, responsável, evidência, revisão e decisão.

@@ -6,6 +6,10 @@ Enquanto este baseline estiver vigente, o piloto é **privado**: somente o admin
 
 Na configuração de projeto disponível para esta revisão não há conector ou parâmetro de OAuth que comprove MFA ou verificação de e-mail. Portanto, esses itens continuam como pré-requisitos externos, e não como controles declarados pelo produto.
 
+## Gate de liberação de dados reais
+
+Enquanto não houver confirmação formal do provedor sobre MFA e verificação de e-mail, o Regularizando não deve receber dados reais de clientes fora do piloto privado. O acesso permanece limitado ao administrador do projeto e a participantes convidados. Qualquer abertura de autoatendimento, criação autônoma de organizações ou expansão para dados reais exige uma nova revisão de identidade, aprovação do responsável pelo tratamento e atualização deste baseline.
+
 | Controle | Regra de entrada do piloto | Evidência exigida |
 |---|---|---|
 | Identidade | Usuários acessam somente pela identidade OAuth aprovada e têm uma associação ativa à organização. | Lista de administradores e papéis revisada. |
