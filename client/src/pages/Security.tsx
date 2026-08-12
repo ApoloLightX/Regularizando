@@ -3,10 +3,10 @@ import { ArrowRight, CheckCircle2, FileCheck2, LockKeyhole, ShieldCheck, UsersRo
 import { Link } from "wouter";
 
 const controls = [
-  { icon: UsersRound, title: "Separação por organização", body: "Os registros operacionais são vinculados a uma organização. As APIs validam o pertencimento antes de criar vínculos entre ativos, licenças, CAPAs, evidências e indicadores." },
+  { icon: UsersRound, title: "Separação por organização", body: "Os registros operacionais são vinculados a uma organização. As APIs validam o pertencimento antes de criar vínculos entre ativos, licenças, planos de ação, evidências e indicadores." },
   { icon: LockKeyhole, title: "Acesso por papel", body: "Administradores, analistas, revisores e leitores possuem responsabilidades distintas. Convites têm uso único, prazo e vínculo ao e-mail autenticado." },
-  { icon: FileCheck2, title: "Evidência com revisão", body: "Arquivos são guardados fora do banco de dados, com metadados, vínculo operacional, status e fila de aprovação humana." },
-  { icon: ShieldCheck, title: "Decisão com responsável", body: "CAPAs e aprovações podem receber responsáveis específicos. Uma revisão atribuída somente pode ser concluída pelo revisor designado." },
+  { icon: FileCheck2, title: "Evidência com revisão e download autorizado", body: "Arquivos são guardados fora do banco de dados, vinculados ao registro operacional e revisados por pessoas. Downloads de evidências passam pela validação da organização antes de receber URL temporária." },
+  { icon: ShieldCheck, title: "Decisão com responsável e histórico", body: "Planos de ação e aprovações podem receber responsáveis específicos. Downloads e uploads de evidências entram na trilha de auditoria disponível da plataforma." },
 ];
 
 export default function Security() {

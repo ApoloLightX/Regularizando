@@ -56,3 +56,12 @@
 - [ ] Confirmar formalmente os recursos de MFA e verificação de e-mail do provedor OAuth Manus antes do uso de dados reais.
 - [x] Restringir e documentar o piloto como acesso privado, exclusivamente para usuários aprovados e convidados pelo administrador da organização.
 - [x] Documentar a operação do piloto com OAuth Manus, incluindo pré-requisitos de identidade, backup/restauração, retenção, atendimento LGPD e resposta a incidentes.
+- [x] Reposicionar a mensagem comercial no motor verificável: obrigação, requisito, prazo, responsável, evidência, revisão e decisão.
+- [x] Renomear Radar regulatório para Licenciamento & Obrigações e substituir visual abstrato por uma demonstração operacional de prazos, pendências e obrigações.
+- [x] Tratar CAPA como terminologia secundária dentro de não conformidades e planos de ação em todas as páginas públicas.
+- [x] Trocar métricas opacas de prontidão e confiança por indicadores explicáveis, fonte documental e revisão técnica.
+- [x] Apresentar Licenciamento como núcleo e Operação/EHS, Indicadores ambientais & ESG e Território/GIS como módulos conectados.
+- [x] Transformar a demonstração de Território em uma leitura GIS concreta com camadas, raio, sobreposições, fonte e data de atualização.
+- [x] Exibir uma fonte e data de atualização explícitas na demonstração pública de Território/GIS.
+- [x] Enxugar o comprimento das seções de camadas na experiência mobile sem perder hierarquia de conteúdo.
+- [x] Atualizar a página de segurança apenas com controles efetivamente implementados e testados, preservando as lacunas operacionais como pendências.

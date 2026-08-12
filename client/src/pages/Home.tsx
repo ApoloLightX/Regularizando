@@ -29,25 +29,25 @@ type ModuleKey = "radar" | "ehs" | "esg";
 
 const modules: Record<ModuleKey, { eyebrow: string; title: string; body: string; image: string; points: string[]; icon: typeof Radar }> = {
   radar: {
-    eyebrow: "01 / Radar regulatório",
-    title: "Saiba o que precisa ser comprovado antes do protocolo.",
-    body: "Cruze atividade, território, órgão e fase do empreendimento para transformar incerteza regulatória em uma sequência de decisões rastreáveis.",
+    eyebrow: "01 / Núcleo: Licenciamento & Obrigações",
+    title: "Transforme cada obrigação em uma rotina que a equipe consegue comprovar.",
+    body: "Organize licenças, condicionantes, documentos, prazos e responsáveis por ativo. A equipe enxerga o que falta e decide com a fonte à vista.",
     image: gisUrl,
-    points: ["Requisitos por atividade e localização", "LP, LI, LO e dependências", "Alertas de validade e complementação"],
-    icon: Radar,
+    points: ["Licenças, condicionantes e requisitos", "Prazos, pendências e responsáveis", "Evidência e revisão antes da decisão"],
+    icon: FileCheck2,
   },
   ehs: {
-    eyebrow: "02 / Operação EHS",
-    title: "Leve a evidência do campo para a decisão.",
-    body: "Inspeções, quase acidentes, riscos, treinamentos e ações corretivas deixam de viver em planilhas isoladas e passam a compor uma linha do tempo operacional.",
+    eyebrow: "02 / Módulo: Operação & não conformidades",
+    title: "Leve do desvio em campo ao plano de ação verificável.",
+    body: "Inspeções, incidentes e não conformidades passam a uma rotina de responsável, prazo, evidência e verificação de eficácia.",
     image: ehsUrl,
-    points: ["Inspeções com fotos e localização", "CAPA e responsáveis por prazo", "Contratadas, riscos e permissões"],
+    points: ["Inspeções com fotos e localização", "Planos de ação e responsáveis por prazo", "Desvio, evidência e verificação de eficácia"],
     icon: ShieldCheck,
   },
   esg: {
-    eyebrow: "03 / ESG rastreável",
+    eyebrow: "03 / Módulo: Indicadores ambientais & ESG",
     title: "Reporte o impacto sem perder a origem do dado.",
-    body: "Métricas, fatores de emissão, fontes e versões conectados a documentos e responsáveis: a base para materialidade, assurance e decisões melhores.",
+    body: "Métricas ambientais, fontes, períodos, unidades e responsáveis conectados a documentos e revisão: uma base rastreável para reporte.",
     image: esgUrl,
     points: ["Catálogo de métricas e unidades", "Escopos, fontes e metodologia", "Evidências prontas para revisão"],
     icon: Leaf,
@@ -127,9 +127,9 @@ export default function Home() {
 
             <div className="hero-panel" aria-label="Prévia do painel Regularizando">
               <div className="panel-topline"><span><span className="live-dot" /> Visão do portfólio</span><span className="panel-date">12 ago 2026</span></div>
-              <div className="panel-title-row"><div><p className="panel-kicker">Centro logístico · SP</p><h2>Prontidão ambiental</h2></div><span className="score">B<span>/A</span></span></div>
+              <div className="panel-title-row"><div><p className="panel-kicker">Centro logístico · SP</p><h2>Prontidão documental</h2></div><span className="score score--attention">Atenção</span></div>
               <div className="panel-progress"><span style={{ width: "72%" }} /></div>
-              <div className="panel-meta"><span>17 evidências verificadas</span><span>6 em análise</span></div>
+              <div className="panel-meta"><span>72% de cobertura documental</span><span>3 pendências críticas</span></div>
               <div className="evidence-list">
                 {evidenceRows.map((row) => {
                   const Icon = row.icon;
@@ -155,7 +155,7 @@ export default function Home() {
               <div className="proof-demo__row" role="row"><strong>Relatório semestral</strong><span className="status-dot status-dot--review">Em revisão</span><span>41 dias</span><span>5 / 5</span><span>Gabriel</span></div>
               <div className="proof-demo__row" role="row"><strong>Ruído ambiental</strong><span className="status-dot status-dot--open">Pendente</span><span>8 dias</span><span>0 / 2</span><span>Carlos</span></div>
             </div>
-            <aside className="proof-demo__finding"><span className="finding-label"><CircleAlert size={14} /> Pendência identificada</span><h3>O laudo anexado não contém o parâmetro DBO exigido pelo requisito.</h3><dl><div><dt>Fonte identificada</dt><dd>Página 14 · Licença ambiental</dd></div><div><dt>Confiança</dt><dd>94%</dd></div><div><dt>Decisão</dt><dd>Aguardando revisão</dd></div></dl><Link href="/produto" className="arrow-link">Entender o fluxo verificável <ArrowRight size={16} /></Link></aside>
+            <aside className="proof-demo__finding"><span className="finding-label"><CircleAlert size={14} /> Pendência identificada</span><h3>O laudo anexado não contém o parâmetro DBO exigido pelo requisito.</h3><dl><div><dt>Fonte identificada</dt><dd>Licença ambiental · página 14</dd></div><div><dt>Evidência relacionada</dt><dd>Laudo_Efluentes_Julho.pdf</dd></div><div><dt>Status</dt><dd>Aguardando revisão técnica</dd></div></dl><Link href="/produto" className="arrow-link">Entender o fluxo verificável <ArrowRight size={16} /></Link></aside>
           </div>
         </section>
 
@@ -163,15 +163,15 @@ export default function Home() {
           <div className="section-number">01 <span>O sistema</span></div>
           <div className="intro-grid">
             <div className="intro-statement"><p className="eyebrow">A nova rotina de conformidade</p><h2 id="intro-title">Menos caça a arquivo. Mais clareza para agir.</h2></div>
-            <div className="intro-copy"><p>Equipes ambientais não precisam de mais uma pasta. Precisam saber qual obrigação vence, qual evidência falta, quem decide e o que acontece depois.</p><p>O Regularizando organiza essa complexidade em um fluxo vivo de requisitos, dados, pessoas e território — com IA para acelerar a triagem e governança para manter a decisão confiável.</p><a className="arrow-link" href="#governanca">Veja como protegemos a decisão <ArrowRight size={16} /></a></div>
+            <div className="intro-copy"><p>Equipes ambientais não precisam de mais uma pasta. Precisam saber qual obrigação vence, qual evidência falta, quem decide e o que acontece depois.</p><p>O Regularizando organiza essa complexidade em uma cadeia clara: obrigação, requisito, prazo, responsável, evidência, revisão e decisão. IA apoia a triagem; o profissional responsável valida.</p><a className="arrow-link" href="#governanca">Veja como protegemos a decisão <ArrowRight size={16} /></a></div>
           </div>
           <div className="principles-row"><div><span className="principle-index">01</span><strong>Antecipar</strong><p>Encontre inconsistências antes do protocolo.</p></div><div><span className="principle-index">02</span><strong>Conectar</strong><p>Una campo, documento, métrica e mapa.</p></div><div><span className="principle-index">03</span><strong>Comprovar</strong><p>Leve cada número até sua evidência.</p></div></div>
         </section>
 
-        <section className="home-use-cases" aria-labelledby="home-cases-title"><div><p className="eyebrow">Cenários que orientam o produto</p><h2 id="home-cases-title">O mesmo sistema, aplicado a problemas que custam tempo e confiança.</h2></div><div className="home-use-cases__grid"><article><span>01</span><h3>Sites distribuídos</h3><p>Carteira de licenças, condicionantes e evidências amarrada ao código de cada ativo.</p><Link href="/casos-de-uso">Ver caso telecom <ArrowRight size={15} /></Link></article><article><span>02</span><h3>Obras e infraestrutura</h3><p>CAPA, inspeção e condicionante conectadas desde a frente de obra até a renovação.</p><Link href="/casos-de-uso">Ver caso de obra <ArrowRight size={15} /></Link></article><article><span>03</span><h3>ESG corporativo</h3><p>Cada indicador preserva período, unidade, fonte, meta e status de revisão.</p><Link href="/casos-de-uso">Ver caso ESG <ArrowRight size={15} /></Link></article></div><Link className="arrow-link" href="/casos-de-uso">Explorar todos os casos de uso <ArrowRight size={16} /></Link></section>
+        <section className="home-use-cases" aria-labelledby="home-cases-title"><div><p className="eyebrow">Cenários que orientam o produto</p><h2 id="home-cases-title">O mesmo sistema, aplicado a problemas que custam tempo e confiança.</h2></div><div className="home-use-cases__grid"><article><span>01</span><h3>Sites distribuídos</h3><p>Carteira de licenças, condicionantes e evidências amarrada ao código de cada ativo.</p><Link href="/casos-de-uso">Ver caso telecom <ArrowRight size={15} /></Link></article><article><span>02</span><h3>Obras e infraestrutura</h3><p>Inspeções, condicionantes e planos de ação conectados da frente de obra à renovação.</p><Link href="/casos-de-uso">Ver caso de obra <ArrowRight size={15} /></Link></article><article><span>03</span><h3>Indicadores ambientais & ESG</h3><p>Cada indicador preserva período, unidade, fonte, meta e status de revisão.</p><Link href="/casos-de-uso">Ver caso de indicadores <ArrowRight size={15} /></Link></article></div><Link className="arrow-link" href="/casos-de-uso">Explorar todos os casos de uso <ArrowRight size={16} /></Link></section>
 
         <section className="modules-section" id="modulos" aria-labelledby="modules-title">
-          <div className="section-heading"><div><p className="eyebrow eyebrow--light">As quatro camadas do produto</p><h2 id="modules-title">Um sistema que acompanha<br />o ciclo inteiro.</h2></div><span className="heading-note">Selecione uma frente<br />para ver o fluxo.</span></div>
+          <div className="section-heading"><div><p className="eyebrow eyebrow--light">Um núcleo que conecta módulos</p><h2 id="modules-title">Comece pelo licenciamento.<br />Expanda quando fizer sentido.</h2></div><span className="heading-note">O núcleo organiza obrigações.<br />Os módulos aprofundam a rotina.</span></div>
           <div className="modules-layout">
             <div className="module-tabs" role="tablist" aria-label="Módulos Regularizando">
               {(Object.keys(modules) as ModuleKey[]).map((key) => {
@@ -179,7 +179,7 @@ export default function Home() {
                 const Icon = item.icon;
                 return <button className={`module-tab ${activeModule === key ? "module-tab--active" : ""}`} type="button" role="tab" aria-selected={activeModule === key} key={key} onClick={() => selectModule(key)}><span className="module-tab__index">{item.eyebrow.slice(0, 2)}</span><span className="module-tab__copy"><strong>{item.eyebrow.slice(5)}</strong><small>{key === "radar" ? "Requisitos e licenças" : key === "ehs" ? "Campo e operação" : "Métricas e disclosure"}</small></span><Icon size={19} /></button>;
               })}
-              <div className="module-tab module-tab--territory"><span className="module-tab__index">04</span><span className="module-tab__copy"><strong>Território</strong><small>GIS e contexto ambiental</small></span><Globe2 size={19} /></div>
+              <div className="module-tab module-tab--territory"><span className="module-tab__index">04</span><span className="module-tab__copy"><strong>Território / GIS</strong><small>Camadas e contexto ambiental</small></span><Globe2 size={19} /></div>
             </div>
             <div className="module-detail" key={activeModule}>
               <div className={`module-detail__visual module-detail__visual--${activeModule}`}><div className="visual-media" role="img" aria-label={`Visual do módulo ${active.eyebrow.slice(5)}`} /><div className="visual-tag"><ActiveIcon size={14} /> Camada ativa</div></div>
@@ -189,13 +189,13 @@ export default function Home() {
         </section>
 
         <section className="territory-section" id="territorio" aria-labelledby="territory-title">
-          <div className="territory-visual"><div className="territory-media" role="img" aria-label="Ilustração cartográfica de camadas territoriais e uma área de projeto" /><span className="map-chip map-chip--top"><span className="map-chip-dot" /> Área de influência</span><span className="map-chip map-chip--bottom">Camadas ambientais <ChevronDown size={14} /></span></div>
-          <div className="territory-copy"><p className="eyebrow">Contexto que muda a decisão</p><h2 id="territory-title">O território também é uma evidência.</h2><p>Antes de abrir uma frente de trabalho, entenda o que existe ao redor: unidades de conservação, recursos hídricos, uso do solo, comunidades e sobreposições que alteram o caminho do licenciamento.</p><div className="territory-stats"><div><strong>01</strong><span>mapa de contexto</span></div><div><strong>∞</strong><span>camadas combináveis</span></div><div><strong>360°</strong><span>visão do projeto</span></div></div><Link className="arrow-link" href="/piloto-telecom">Conectar meu contexto territorial <ArrowRight size={16} /></Link></div>
+          <div className="territory-visual"><div className="territory-media" role="img" aria-label="Demonstração GIS de um empreendimento com área de influência, recursos hídricos e unidade de conservação"><span className="gis-site">● Empreendimento</span><span className="gis-river">~</span><span className="gis-protected">Unidade de conservação</span></div><span className="map-chip map-chip--top"><span className="map-chip-dot" /> Raio analisado: 10 km</span><div className="gis-layer-list"><span>✓ Unidades de conservação</span><span>✓ Recursos hídricos</span><span>✓ Uso do solo</span><span>✓ Áreas protegidas</span></div><span className="map-chip map-chip--bottom">2 sobreposições relevantes <ChevronDown size={14} /></span></div>
+          <div className="territory-copy"><p className="eyebrow">Módulo de contexto territorial</p><h2 id="territory-title">O território também é uma evidência.</h2><p>Antes de abrir uma frente de trabalho, veja camadas que podem mudar o caminho do licenciamento: unidades de conservação, recursos hídricos, uso do solo e outras sobreposições.</p><div className="territory-stats"><div><strong>10 km</strong><span>raio analisado</span></div><div><strong>02</strong><span>sobreposições</span></div><div><strong>Fonte</strong><span>configurada no piloto</span></div></div><p className="territory-source">Demonstração conceitual · Fonte: base geoespacial definida no piloto · Atualização: 12/08/2026. Cada implantação registra a fonte oficial e a data efetiva da consulta.</p><Link className="arrow-link" href="/piloto-telecom">Planejar o recorte territorial <ArrowRight size={16} /></Link></div>
         </section>
 
         <section className="governance-section" id="governanca" aria-labelledby="governance-title">
           <div className="section-number section-number--dark">02 <span>Governança</span></div>
-          <div className="governance-grid"><div><p className="eyebrow">IA com responsabilidade</p><h2 id="governance-title">IA que você consegue <em>auditar.</em></h2></div><div className="governance-copy"><p>A IA organiza documentos, sugere campos e aponta divergências. A equipe técnica revisa, aprova e mantém o contexto. Assim, automação não vira caixa-preta: cada resultado carrega fonte, confiança e responsável.</p><div className="audit-trail"><span>Fonte original</span><ArrowRight size={14} /><span>Requisito relacionado</span><ArrowRight size={14} /><span>Pendência detectada</span><ArrowRight size={14} /><span>Revisão humana</span><ArrowRight size={14} /><span>Decisão e histórico</span></div><div className="governance-card"><div className="governance-card__icon"><Sparkles size={19} /></div><div><strong>Uma resposta nunca vem sozinha.</strong><p>Ela vem com evidência, versão e próxima ação.</p></div><span className="verified-pill"><Check size={13} /> auditável</span></div></div></div>
+          <div className="governance-grid"><div><p className="eyebrow">IA com responsabilidade</p><h2 id="governance-title">IA que você consegue <em>auditar.</em></h2></div><div className="governance-copy"><p>A IA organiza documentos, sugere campos e aponta divergências. A equipe técnica revisa, aprova e mantém o contexto. Assim, automação não vira caixa-preta: cada resultado aponta a fonte e permanece sujeito à decisão humana.</p><div className="audit-trail"><span>Fonte original</span><ArrowRight size={14} /><span>Requisito relacionado</span><ArrowRight size={14} /><span>Pendência detectada</span><ArrowRight size={14} /><span>Revisão humana</span><ArrowRight size={14} /><span>Decisão e histórico</span></div><div className="governance-card"><div className="governance-card__icon"><Sparkles size={19} /></div><div><strong>Uma resposta nunca vem sozinha.</strong><p>Ela vem com evidência, versão e próxima ação.</p></div><span className="verified-pill"><Check size={13} /> auditável</span></div></div></div>
         </section>
 
         <section className="cta-section" id="contato" aria-labelledby="cta-title"><div className="cta-map" aria-hidden="true" /><div className="cta-inner"><div className="cta-evidence"><div className="cta-evidence__top"><span>Próxima decisão</span><span>04 / 04</span></div><div className="cta-evidence__line"><span className="cta-evidence__marker"><Check size={14} /></span><div><strong>Contexto pronto para revisão</strong><small>Fontes, responsáveis e próximos passos conectados.</small></div></div><div className="cta-evidence__footer"><span className="verified-pill"><Check size={13} /> evidência verificada</span><ArrowRight size={15} /></div></div><div className="cta-copy"><p className="eyebrow eyebrow--light">Comece por uma obrigação real</p><h2 id="cta-title">Transforme sua primeira rotina em um piloto verificável.</h2><p>Selecione uma carteira de licenças, condicionantes ou sites e descubra onde estão os prazos, evidências e responsáveis que exigem atenção.</p><Link className="button button--mint" href="/contato">Solicitar piloto <ArrowRight size={17} /></Link></div></div></section>
