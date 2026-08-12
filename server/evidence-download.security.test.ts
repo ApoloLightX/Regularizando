@@ -26,4 +26,10 @@ describe("private evidence downloads", () => {
     expect(server).toContain('app.use(\n    "/api/trpc",\n    apiRateLimit');
     expect(server).toContain("entry.count > 120");
   });
+
+  it("keeps the pilot private by allowing organization creation only for the project owner", () => {
+    const router = fs.readFileSync(path.join(root, "server", "routers.ts"), "utf8");
+    expect(router).toContain("ctx.user.openId !== ENV.ownerOpenId");
+    expect(router).toContain("O piloto é privado; solicite um convite ao administrador.");
+  });
 });

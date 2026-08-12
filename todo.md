@@ -54,4 +54,5 @@
 - [ ] Criar audit log append-only para ações sensíveis e documentar baseline de retenção, exclusão, recuperação e resposta a incidentes.
 - [x] Definir rate limiting em memória para chamadas tRPC, incluindo rotas públicas e upload.
 - [ ] Confirmar formalmente os recursos de MFA e verificação de e-mail do provedor OAuth Manus antes do uso de dados reais.
+- [x] Restringir e documentar o piloto como acesso privado, exclusivamente para usuários aprovados e convidados pelo administrador da organização.
 - [x] Documentar a operação do piloto com OAuth Manus, incluindo pré-requisitos de identidade, backup/restauração, retenção, atendimento LGPD e resposta a incidentes.

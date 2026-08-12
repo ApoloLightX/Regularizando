@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
+import { ENV } from "./_core/env";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
@@ -49,7 +50,7 @@ export const appRouter = router({
   auth: router({ me: publicProcedure.query(({ ctx }) => ctx.user), logout: publicProcedure.mutation(({ ctx }) => { const cookieOptions = getSessionCookieOptions(ctx.req); ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 }); return { success: true } as const; }) }),
   organization: router({
     current: protectedProcedure.query(({ ctx }) => getOrganizationForUser(ctx.user.id)),
-    create: protectedProcedure.input(organizationInput).mutation(async ({ ctx, input }) => { const existing = await getOrganizationForUser(ctx.user.id); if (existing) return existing.organization; return createOrganizationForUser({ ...input, slug: `${makeOrganizationSlug(input.name)}-${randomUUID().slice(0, 6)}`, userId: ctx.user.id }); }),
+    create: protectedProcedure.input(organizationInput).mutation(async ({ ctx, input }) => { if (ctx.user.openId !== ENV.ownerOpenId) throw new TRPCError({ code: "FORBIDDEN", message: "O piloto é privado; solicite um convite ao administrador." }); const existing = await getOrganizationForUser(ctx.user.id); if (existing) return existing.organization; return createOrganizationForUser({ ...input, slug: `${makeOrganizationSlug(input.name)}-${randomUUID().slice(0, 6)}`, userId: ctx.user.id }); }),
   }),
   pilot: router({
     request: publicProcedure.input(z.object({ name: z.string().trim().min(2).max(160), email: z.string().trim().email().max(320), company: z.string().trim().min(2).max(180), role: z.string().trim().max(120).optional(), sector: z.enum(["telecom", "infraestrutura", "industria", "consultoria", "outro"]), portfolioSize: z.string().trim().max(80).optional(), challenge: z.string().trim().min(10).max(2000).optional(), consent: z.literal(true) })).mutation(async ({ input }) => {
