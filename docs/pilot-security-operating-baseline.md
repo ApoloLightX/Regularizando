@@ -2,6 +2,8 @@
 
 O piloto usa **OAuth Manus** como fonte de identidade. A aplicação não deve declarar MFA, verificação de e-mail, retenção de sessão, revogação ou recuperação de acesso como capacidades próprias sem confirmação formal do provedor. Antes de cada organização entrar com dados reais, o responsável pelo piloto registra essa confirmação e designa o administrador organizacional.
 
+Na configuração de projeto disponível para esta revisão não há conector ou parâmetro de OAuth que comprove MFA ou verificação de e-mail. Portanto, esses itens continuam como pré-requisitos externos, e não como controles declarados pelo produto.
+
 | Controle | Regra de entrada do piloto | Evidência exigida |
 |---|---|---|
 | Identidade | Usuários acessam somente pela identidade OAuth aprovada e têm uma associação ativa à organização. | Lista de administradores e papéis revisada. |

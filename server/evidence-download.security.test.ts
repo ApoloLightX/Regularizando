@@ -19,4 +19,11 @@ describe("private evidence downloads", () => {
     expect(proxy).toContain('key.startsWith("organizations/")');
     expect(proxy).toContain('res.status(404).send("Not found")');
   });
+
+  it("keeps an API rate limit in front of tRPC procedures", () => {
+    const server = fs.readFileSync(path.join(root, "server", "_core", "index.ts"), "utf8");
+    expect(server).toContain("function apiRateLimit");
+    expect(server).toContain('app.use(\n    "/api/trpc",\n    apiRateLimit');
+    expect(server).toContain("entry.count > 120");
+  });
 });

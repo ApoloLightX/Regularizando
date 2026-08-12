@@ -52,5 +52,6 @@
 - [x] Substituir o proxy genérico de `/manus-storage/*` por download autorizado de evidências com URL temporária e teste cross-tenant.
 - [ ] Implementar testes negativos de tenant para leitura, vínculo, alteração, revisão e download de recursos da organização B.
 - [ ] Criar audit log append-only para ações sensíveis e documentar baseline de retenção, exclusão, recuperação e resposta a incidentes.
-- [ ] Definir rate limiting para rotas públicas, autenticação e upload, além de confirmar recursos de MFA e verificação de e-mail do provedor de identidade.
+- [x] Definir rate limiting em memória para chamadas tRPC, incluindo rotas públicas e upload.
+- [ ] Confirmar formalmente os recursos de MFA e verificação de e-mail do provedor OAuth Manus antes do uso de dados reais.
 - [x] Documentar a operação do piloto com OAuth Manus, incluindo pré-requisitos de identidade, backup/restauração, retenção, atendimento LGPD e resposta a incidentes.
