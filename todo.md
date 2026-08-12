@@ -78,3 +78,17 @@
 - [x] Exibir no painel de obrigações o estado real de revisão humana das evidências vinculadas.
 - [x] Exigir confirmação humana explícita de escopo antes de aplicar um requisito e testar a rejeição sem essa confirmação.
 - [x] Proibir de forma testável conclusões baseadas somente em perfil setorial, sem requisito, versão e fonte verificados.
+- [x] Criar catálogo organizacional de fontes oficiais com jurisdição, hierarquia, URL de origem e versão/vigência verificáveis.
+- [x] Registrar artigo, item ou página, texto original, critérios de aplicabilidade, frequência e evidência esperada em cada versão de requisito.
+- [x] Modelar conflitos de fontes sem resolução automática e obrigar encaminhamento para revisão técnica.
+- [x] Criar um onboarding de fontes e documentos do ativo que mantenha a aplicabilidade como pendente até revisão humana.
+- [x] Adicionar controles SaaS de progresso do onboarding e documentação contextual, sem inserir dados fictícios do cliente.
+- [x] Testar rejeição de obrigação sem metadados de origem, sem confirmação de aplicabilidade ou com conflito normativo não revisado.
+- [x] Versionar critérios de aplicabilidade, frequência e evidência esperada junto ao texto normativo de cada requisito.
+- [x] Testar a rejeição de criação e decisão de obrigação quando a fonte não tiver origem ou jurisdição válidas.
+- [x] Testar a rejeição operacional de obrigação vinculada a conflito normativo pendente.
+- [x] Sincronizar a migração versionada com o campo obrigatório de critérios de aplicabilidade por versão.
+- [x] Cobrir diretamente as rotas de aplicação e decisão contra fonte sem origem ou jurisdição válidas.
+- [x] Cobrir diretamente a rejeição de aplicação ou decisão quando houver conflito normativo pendente.
+- [x] Exibir no onboarding o pacote documental real exigido para o primeiro ativo, sem preenchimento automático ou dados simulados.
+- [x] Cobrir diretamente a rejeição de decisão de obrigação quando a fonte não tiver origem ou jurisdição válidas.

@@ -1,4 +1,5 @@
 import {
+  boolean,
   decimal,
   foreignKey,
   index,
@@ -256,7 +257,11 @@ export const requirementSources = mysqlTable("requirementSources", {
   title: varchar("title", { length: 260 }).notNull(),
   issuer: varchar("issuer", { length: 180 }).notNull(),
   sourceType: mysqlEnum("sourceType", ["norma", "licenca", "condicionante", "termo_referencia", "oficio", "orientacao_tecnica", "outro"]).notNull(),
+  jurisdiction: varchar("jurisdiction", { length: 140 }),
+  authorityLevel: mysqlEnum("authorityLevel", ["federal", "estadual", "municipal", "setorial", "organizacional", "outro"]).default("outro").notNull(),
+  officialOriginStatus: mysqlEnum("officialOriginStatus", ["oficial", "documento_organizacao", "pendente"]).default("pendente").notNull(),
   identifier: varchar("identifier", { length: 180 }).notNull(),
+  sourceVersionLabel: varchar("sourceVersionLabel", { length: 80 }),
   sourceUrl: varchar("sourceUrl", { length: 700 }),
   publicationDate: timestamp("publicationDate"),
   effectiveFrom: timestamp("effectiveFrom"),
@@ -284,6 +289,13 @@ export const requirements = mysqlTable("requirements", {
   code: varchar("code", { length: 100 }).notNull(),
   title: varchar("title", { length: 260 }).notNull(),
   applicabilityScope: text("applicabilityScope").notNull(),
+  applicabilityCriteria: text("applicabilityCriteria").notNull(),
+  applicabilityStatus: mysqlEnum("applicabilityStatus", ["pendente_revisao_tecnica", "aplicavel_confirmada", "nao_aplicavel"]).default("pendente_revisao_tecnica").notNull(),
+  applicabilityReviewNote: text("applicabilityReviewNote"),
+  applicabilityReviewedByUserId: int("applicabilityReviewedByUserId"),
+  applicabilityReviewedAt: timestamp("applicabilityReviewedAt"),
+  recurrenceLabel: varchar("recurrenceLabel", { length: 120 }),
+  expectedEvidenceDescription: text("expectedEvidenceDescription"),
   status: mysqlEnum("status", ["rascunho", "em_revisao", "ativo", "arquivado"]).default("rascunho").notNull(),
   createdByUserId: int("createdByUserId").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -296,6 +308,7 @@ export const requirements = mysqlTable("requirements", {
   foreignKey({ columns: [table.sourceId], foreignColumns: [requirementSources.id], name: "requirement_source_fk" }).onDelete("restrict"),
   foreignKey({ columns: [table.sectorProfileId], foreignColumns: [sectorProfiles.id], name: "requirement_profile_fk" }).onDelete("set null"),
   foreignKey({ columns: [table.createdByUserId], foreignColumns: [users.id], name: "requirement_creator_fk" }),
+  foreignKey({ columns: [table.applicabilityReviewedByUserId], foreignColumns: [users.id], name: "requirement_applicability_reviewer_fk" }).onDelete("set null"),
 ]);
 
 /** Conteúdo versionado e revisável; apenas versões verificadas podem apoiar decisões de conformidade. */
@@ -304,7 +317,11 @@ export const requirementVersions = mysqlTable("requirementVersions", {
   organizationId: int("organizationId").notNull(),
   requirementId: int("requirementId").notNull(),
   versionLabel: varchar("versionLabel", { length: 48 }).notNull(),
+  sourceLocator: varchar("sourceLocator", { length: 220 }).notNull(),
   sourceExcerpt: text("sourceExcerpt").notNull(),
+  applicabilityCriteria: text("applicabilityCriteria").notNull(),
+  recurrenceLabel: varchar("recurrenceLabel", { length: 120 }),
+  expectedEvidenceDescription: text("expectedEvidenceDescription"),
   interpretationNotes: text("interpretationNotes"),
   effectiveFrom: timestamp("effectiveFrom"),
   effectiveTo: timestamp("effectiveTo"),
@@ -321,6 +338,49 @@ export const requirementVersions = mysqlTable("requirementVersions", {
   foreignKey({ columns: [table.requirementId], foreignColumns: [requirements.id], name: "requirement_version_requirement_fk" }).onDelete("cascade"),
   foreignKey({ columns: [table.createdByUserId], foreignColumns: [users.id], name: "requirement_version_creator_fk" }),
   foreignKey({ columns: [table.reviewedByUserId], foreignColumns: [users.id], name: "requirement_version_reviewer_fk" }).onDelete("set null"),
+]);
+
+/** Divergências entre fontes são registradas e exigem revisão técnica, jamais resolução automática. */
+export const requirementSourceConflicts = mysqlTable("requirementSourceConflicts", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  primarySourceId: int("primarySourceId").notNull(),
+  conflictingSourceId: int("conflictingSourceId").notNull(),
+  conflictTopic: varchar("conflictTopic", { length: 260 }).notNull(),
+  hierarchyNote: text("hierarchyNote").notNull(),
+  status: mysqlEnum("status", ["pendente_revisao", "resolvido", "nao_aplicavel"]).default("pendente_revisao").notNull(),
+  resolutionRationale: text("resolutionRationale"),
+  reviewedByUserId: int("reviewedByUserId"),
+  reviewedAt: timestamp("reviewedAt"),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("source_conflict_unique_pair").on(table.organizationId, table.primarySourceId, table.conflictingSourceId),
+  index("source_conflict_org_status_idx").on(table.organizationId, table.status),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "source_conflict_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.primarySourceId], foreignColumns: [requirementSources.id], name: "source_conflict_primary_source_fk" }).onDelete("restrict"),
+  foreignKey({ columns: [table.conflictingSourceId], foreignColumns: [requirementSources.id], name: "source_conflict_conflicting_source_fk" }).onDelete("restrict"),
+  foreignKey({ columns: [table.reviewedByUserId], foreignColumns: [users.id], name: "source_conflict_reviewer_fk" }).onDelete("set null"),
+  foreignKey({ columns: [table.createdByUserId], foreignColumns: [users.id], name: "source_conflict_creator_fk" }),
+]);
+
+/** Progresso operacional sem documentos simulados, para reduzir o tempo até a primeira revisão técnica. */
+export const organizationOnboarding = mysqlTable("organizationOnboarding", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  sourceCatalogReady: boolean("sourceCatalogReady").default(false).notNull(),
+  assetContextReady: boolean("assetContextReady").default(false).notNull(),
+  evidencePackageReady: boolean("evidencePackageReady").default(false).notNull(),
+  technicalReviewReady: boolean("technicalReviewReady").default(false).notNull(),
+  currentStep: mysqlEnum("currentStep", ["fontes", "ativo", "evidencias", "revisao"]).default("fontes").notNull(),
+  updatedByUserId: int("updatedByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("organization_onboarding_unique").on(table.organizationId),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "onboarding_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.updatedByUserId], foreignColumns: [users.id], name: "onboarding_user_fk" }),
 ]);
 
 /** Aplicação concreta de uma versão a uma organização, site ou licença, com responsável e prazo. */

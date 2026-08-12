@@ -14,9 +14,11 @@ import {
   obligationInstances,
   organizationInvites,
   organizationMembers,
+  organizationOnboarding,
   organizations,
   pilotRequests,
   requirementSources,
+  requirementSourceConflicts,
   requirements,
   requirementVersions,
   reviewRequests,
@@ -96,7 +98,7 @@ export async function getDashboardData(organizationId: number) {
 export async function getObligationOverview(organizationId: number) {
   const db = await getDb();
   if (!db) throw new Error("Banco de dados indisponível");
-  const [profiles, sources, requirementRows, versionRows, obligations, evidenceLinks, evidenceRows, reviews, decisions] = await Promise.all([
+  const [profiles, sources, requirementRows, versionRows, obligations, evidenceLinks, evidenceRows, reviews, decisions, conflicts, onboardingRows] = await Promise.all([
     db.select().from(sectorProfiles).where(eq(sectorProfiles.organizationId, organizationId)).orderBy(desc(sectorProfiles.updatedAt)),
     db.select().from(requirementSources).where(eq(requirementSources.organizationId, organizationId)).orderBy(desc(requirementSources.updatedAt)),
     db.select().from(requirements).where(eq(requirements.organizationId, organizationId)).orderBy(desc(requirements.updatedAt)),
@@ -106,8 +108,10 @@ export async function getObligationOverview(organizationId: number) {
     db.select().from(evidences).where(eq(evidences.organizationId, organizationId)).orderBy(desc(evidences.createdAt)),
     db.select().from(reviewRequests).where(eq(reviewRequests.organizationId, organizationId)).orderBy(desc(reviewRequests.createdAt)),
     db.select().from(obligationDecisions).where(eq(obligationDecisions.organizationId, organizationId)).orderBy(desc(obligationDecisions.decidedAt)),
+    db.select().from(requirementSourceConflicts).where(eq(requirementSourceConflicts.organizationId, organizationId)).orderBy(desc(requirementSourceConflicts.updatedAt)),
+    db.select().from(organizationOnboarding).where(eq(organizationOnboarding.organizationId, organizationId)).limit(1),
   ]);
-  return { profiles, sources, requirements: requirementRows, versions: versionRows, obligations, evidenceLinks, evidences: evidenceRows, reviews, decisions };
+  return { profiles, sources, requirements: requirementRows, versions: versionRows, obligations, evidenceLinks, evidences: evidenceRows, reviews, decisions, conflicts, onboarding: onboardingRows[0] ?? null };
 }
 
 export function deriveObligationEvidenceStatus(statuses: Array<"enviada" | "verificada" | "rejeitada">): "ausente" | "enviada" | "verificada" | "rejeitada" {
@@ -128,9 +132,37 @@ export async function syncObligationEvidenceStatus(obligationId: number, organiz
 export async function createSectorProfile(input: typeof sectorProfiles.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(sectorProfiles).values(input))[0].insertId); }
 export async function activateSectorProfile(input: { profileId: number; organizationId: number }) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); const result = await db.update(sectorProfiles).set({ status: "ativo" }).where(and(eq(sectorProfiles.id, input.profileId), eq(sectorProfiles.organizationId, input.organizationId))); if (result[0].affectedRows !== 1) throw new Error("O perfil setorial não pertence à organização atual."); }
 export async function getSectorProfileForOrganization(profileId: number, organizationId: number) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); const profile = (await db.select().from(sectorProfiles).where(and(eq(sectorProfiles.id, profileId), eq(sectorProfiles.organizationId, organizationId))).limit(1))[0]; if (!profile) throw new Error("O perfil setorial não pertence à organização atual."); return profile; }
-export async function createRequirementSource(input: typeof requirementSources.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(requirementSources).values(input))[0].insertId); }
+export async function createRequirementSource(input: typeof requirementSources.$inferInsert) {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  validateRequirementSourceProvenance(input);
+  return Number((await db.insert(requirementSources).values(input))[0].insertId);
+}
+
+export function validateRequirementSourceProvenance(source: { officialOriginStatus?: "oficial" | "documento_organizacao" | "pendente" | null; sourceUrl?: string | null; jurisdiction?: string | null }) {
+  if (!source.officialOriginStatus || source.officialOriginStatus === "pendente") throw new Error("A origem da fonte precisa ser classificada antes do uso no motor.");
+  if (!source.jurisdiction?.trim()) throw new Error("A fonte exige jurisdição antes do uso no motor.");
+  if (source.officialOriginStatus === "oficial" && !source.sourceUrl) throw new Error("Fontes oficiais exigem URL de origem oficial.");
+}
 export async function createRequirement(input: typeof requirements.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(requirements).values(input))[0].insertId); }
 export async function createRequirementVersion(input: typeof requirementVersions.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(requirementVersions).values(input))[0].insertId); }
+
+export async function createRequirementSourceConflict(input: typeof requirementSourceConflicts.$inferInsert) {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  if (input.primarySourceId === input.conflictingSourceId) throw new Error("O conflito exige duas fontes distintas.");
+  await Promise.all([getSourceForOrganization(input.primarySourceId, input.organizationId), getSourceForOrganization(input.conflictingSourceId, input.organizationId)]);
+  return Number((await db.insert(requirementSourceConflicts).values(input))[0].insertId);
+}
+
+export async function resolveRequirementSourceConflict(input: { conflictId: number; organizationId: number; reviewerUserId: number; resolutionRationale: string; status: "resolvido" | "nao_aplicavel" }) {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  const result = await db.update(requirementSourceConflicts).set({ status: input.status, resolutionRationale: input.resolutionRationale, reviewedByUserId: input.reviewerUserId, reviewedAt: new Date() }).where(and(eq(requirementSourceConflicts.id, input.conflictId), eq(requirementSourceConflicts.organizationId, input.organizationId), eq(requirementSourceConflicts.status, "pendente_revisao")));
+  if (result[0].affectedRows !== 1) throw new Error("O conflito não pertence à organização atual ou já foi revisado.");
+}
+
+export async function updateOrganizationOnboarding(input: { organizationId: number; updatedByUserId: number; sourceCatalogReady: boolean; assetContextReady: boolean; evidencePackageReady: boolean; technicalReviewReady: boolean; currentStep: "fontes" | "ativo" | "evidencias" | "revisao" }) {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  await db.insert(organizationOnboarding).values(input).onDuplicateKeyUpdate({ set: { sourceCatalogReady: input.sourceCatalogReady, assetContextReady: input.assetContextReady, evidencePackageReady: input.evidencePackageReady, technicalReviewReady: input.technicalReviewReady, currentStep: input.currentStep, updatedByUserId: input.updatedByUserId } });
+}
 
 export async function getSourceForOrganization(sourceId: number, organizationId: number) {
   const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
@@ -144,6 +176,12 @@ export async function getRequirementForOrganization(requirementId: number, organ
   const requirement = (await db.select().from(requirements).where(and(eq(requirements.id, requirementId), eq(requirements.organizationId, organizationId))).limit(1))[0];
   if (!requirement) throw new Error("O requisito não pertence à organização atual.");
   return requirement;
+}
+
+export async function reviewRequirementApplicability(input: { requirementId: number; organizationId: number; reviewerUserId: number; status: "aplicavel_confirmada" | "nao_aplicavel"; rationale: string }) {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  const result = await db.update(requirements).set({ applicabilityStatus: input.status, applicabilityReviewNote: input.rationale, applicabilityReviewedByUserId: input.reviewerUserId, applicabilityReviewedAt: new Date() }).where(and(eq(requirements.id, input.requirementId), eq(requirements.organizationId, input.organizationId)));
+  if (result[0].affectedRows !== 1) throw new Error("O requisito não pertence à organização atual.");
 }
 
 export async function getRequirementVersionForOrganization(versionId: number, organizationId: number) {
@@ -167,9 +205,26 @@ export async function getRequirementApplicationContext(versionId: number, organi
   return { version, requirement, source, profile, versionIsEffective: isEffectiveAt(version), sourceIsEffective: isEffectiveAt(source) };
 }
 
+export async function hasPendingSourceConflict(sourceId: number, organizationId: number) {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  const rows = await db.select({ primarySourceId: requirementSourceConflicts.primarySourceId, conflictingSourceId: requirementSourceConflicts.conflictingSourceId }).from(requirementSourceConflicts).where(and(eq(requirementSourceConflicts.organizationId, organizationId), eq(requirementSourceConflicts.status, "pendente_revisao")));
+  return rows.some((row) => row.primarySourceId === sourceId || row.conflictingSourceId === sourceId);
+}
+
+export function assertObligationContextCanProceed(context: { source: { verificationStatus: string; officialOriginStatus?: "oficial" | "documento_organizacao" | "pendente" | null; sourceUrl?: string | null; jurisdiction?: string | null }; version: { reviewStatus: string }; requirement: { applicabilityStatus: string }; sourceIsEffective: boolean; versionIsEffective: boolean }, conflictPending: boolean) {
+  validateRequirementSourceProvenance(context.source);
+  if (context.source.verificationStatus !== "verificada") throw new Error("Somente fontes verificadas podem apoiar uma obrigação.");
+  if (context.version.reviewStatus !== "verificada") throw new Error("Somente versões verificadas podem gerar uma obrigação.");
+  if (!context.sourceIsEffective || !context.versionIsEffective) throw new Error("A fonte ou a versão do requisito está fora da vigência declarada.");
+  if (context.requirement.applicabilityStatus !== "aplicavel_confirmada") throw new Error("Aplicabilidade pendente de revisão técnica.");
+  if (conflictPending) throw new Error("Existe conflito de fonte pendente de revisão técnica.");
+}
+
 export async function verifyRequirementSource(input: { sourceId: number; organizationId: number; reviewerUserId: number }) {
   const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
-  await getSourceForOrganization(input.sourceId, input.organizationId);
+  const source = await getSourceForOrganization(input.sourceId, input.organizationId);
+  if (source.officialOriginStatus === "pendente") throw new Error("A origem da fonte precisa ser classificada antes da verificação.");
+  if (source.officialOriginStatus === "oficial" && !source.sourceUrl) throw new Error("Fontes oficiais exigem URL de origem oficial.");
   await db.update(requirementSources).set({ verificationStatus: "verificada", verifiedByUserId: input.reviewerUserId, verifiedAt: new Date() }).where(and(eq(requirementSources.id, input.sourceId), eq(requirementSources.organizationId, input.organizationId)));
 }
 
@@ -179,6 +234,7 @@ export async function verifyRequirementVersion(input: { versionId: number; organ
   const requirement = await getRequirementForOrganization(version.requirementId, input.organizationId);
   const source = await getSourceForOrganization(requirement.sourceId, input.organizationId);
   if (source.verificationStatus !== "verificada") throw new Error("A fonte precisa estar verificada antes da versão do requisito.");
+  if (requirement.applicabilityStatus !== "aplicavel_confirmada") throw new Error("A aplicabilidade do requisito precisa de revisão técnica antes da versão ser verificada.");
   await db.transaction(async (tx) => {
     await tx.update(requirementVersions).set({ reviewStatus: "verificada", reviewedByUserId: input.reviewerUserId, reviewedAt: new Date() }).where(and(eq(requirementVersions.id, input.versionId), eq(requirementVersions.organizationId, input.organizationId)));
     await tx.update(requirements).set({ status: "ativo" }).where(and(eq(requirements.id, version.requirementId), eq(requirements.organizationId, input.organizationId)));
@@ -188,9 +244,7 @@ export async function verifyRequirementVersion(input: { versionId: number; organ
 export async function createObligationInstance(input: typeof obligationInstances.$inferInsert) {
   const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
   const context = await getRequirementApplicationContext(input.requirementVersionId, input.organizationId);
-  if (context.source.verificationStatus !== "verificada") throw new Error("Somente fontes verificadas podem apoiar uma obrigação.");
-  if (context.version.reviewStatus !== "verificada") throw new Error("Somente versões verificadas podem gerar uma obrigação.");
-  if (!context.sourceIsEffective || !context.versionIsEffective) throw new Error("A fonte ou a versão do requisito está fora da vigência declarada.");
+  assertObligationContextCanProceed(context, await hasPendingSourceConflict(context.source.id, input.organizationId));
   if (!input.scopeJustification.trim()) throw new Error("A obrigação exige justificativa de escopo.");
   return Number((await db.insert(obligationInstances).values(input))[0].insertId);
 }
@@ -221,8 +275,7 @@ export async function decideObligation(input: { obligationId: number; organizati
   if (!obligation) throw new Error("A obrigação não pertence à organização atual.");
   if (obligation.requirementVersionId !== input.requirementVersionId) throw new Error("A decisão deve citar a versão aplicada à obrigação.");
   const context = await getRequirementApplicationContext(input.requirementVersionId, input.organizationId);
-  if (context.source.verificationStatus !== "verificada" || context.version.reviewStatus !== "verificada") throw new Error("Uma decisão exige fonte e versão verificadas.");
-  if (!context.sourceIsEffective || !context.versionIsEffective) throw new Error("Uma decisão não pode usar fonte ou versão fora da vigência declarada.");
+  assertObligationContextCanProceed(context, await hasPendingSourceConflict(context.source.id, input.organizationId));
   return db.transaction(async (tx) => {
     const decisionId = Number((await tx.insert(obligationDecisions).values(input))[0].insertId);
     const status = input.decision === "cumprida" ? "cumprida" : input.decision === "nao_aplicavel" ? "nao_aplicavel" : input.decision === "requer_revisao" ? "aguardando_revisao" : "aberta";

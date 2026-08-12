@@ -23,6 +23,7 @@ const db = vi.hoisted(() => ({
   createReviewRequest: vi.fn(),
   createRequirement: vi.fn(),
   createRequirementSource: vi.fn(),
+  createRequirementSourceConflict: vi.fn(),
   createRequirementVersion: vi.fn(),
   createSectorProfile: vi.fn(),
   createSite: vi.fn(),
@@ -40,8 +41,12 @@ const db = vi.hoisted(() => ({
   getSectorProfileForOrganization: vi.fn(),
   getSourceForOrganization: vi.fn(),
   getTeamOverview: vi.fn(),
+  hasPendingSourceConflict: vi.fn(),
   linkEvidenceToObligation: vi.fn(),
+  resolveRequirementSourceConflict: vi.fn(),
+  reviewRequirementApplicability: vi.fn(),
   revokeOrganizationInvite: vi.fn(),
+  updateOrganizationOnboarding: vi.fn(),
   verifyRequirementSource: vi.fn(),
   verifyRequirementVersion: vi.fn(),
 }));
@@ -73,6 +78,7 @@ describe("team and assignment procedures", () => {
     db.getOrganizationForUser.mockResolvedValue(workspace());
     db.getMemberOfOrganizationByEmail.mockResolvedValue(undefined);
     db.createOrganizationInvite.mockResolvedValue(91);
+    db.hasPendingSourceConflict.mockResolvedValue(false);
     db.getTeamOverview.mockResolvedValue({ members: [], invites: [] });
     db.revokeOrganizationInvite.mockResolvedValue(undefined);
     db.assignCapaResponsible.mockResolvedValue(undefined);
@@ -194,15 +200,15 @@ describe("team and assignment procedures", () => {
   it("permite analisar a base apenas como contexto e mantém a decisão humana obrigatória", async () => {
     const caller = appRouter.createCaller(context("reviewer"));
     db.getOrganizationForUser.mockResolvedValue(workspace("reviewer"));
-    db.getRequirementApplicationContext.mockResolvedValue({ version: { id: 304, reviewStatus: "verificada" }, requirement: { applicabilityScope: "Estações de telecom em operação distribuída." }, source: { id: 90, title: "Licença ambiental", identifier: "LO-100", verificationStatus: "verificada", sourceUrl: null }, profile: null, versionIsEffective: true, sourceIsEffective: true });
-    await expect(caller.obligations.analysisGate({ requirementVersionId: 304 })).resolves.toEqual({ statusDaBase: "verificada", fontes: [{ id: 90, titulo: "Licença ambiental", identificador: "LO-100", status: "verificada", url: null }], limitesDeEscopo: "Estações de telecom em operação distribuída.", perfilSetorial: null, requerRevisaoHumana: true, podeConcluir: false });
+    db.getRequirementApplicationContext.mockResolvedValue({ version: { id: 304, reviewStatus: "verificada", versionLabel: "2026.1", applicabilityCriteria: "Ativo identificado e documentação técnica disponível." }, requirement: { applicabilityScope: "Estações de telecom em operação distribuída.", applicabilityCriteria: "Registro histórico do requisito.", applicabilityStatus: "aplicavel_confirmada" }, source: { id: 90, title: "Licença ambiental", identifier: "LO-100", verificationStatus: "verificada", sourceUrl: null, jurisdiction: "São Paulo", authorityLevel: "estadual", officialOriginStatus: "documento_organizacao" }, profile: null, versionIsEffective: true, sourceIsEffective: true });
+    await expect(caller.obligations.analysisGate({ requirementVersionId: 304 })).resolves.toEqual({ statusDaBase: "verificada", fontes: [{ id: 90, titulo: "Licença ambiental", identificador: "LO-100", status: "verificada", url: null, jurisdicao: "São Paulo", hierarquia: "estadual", origem: "documento_organizacao" }], limitesDeEscopo: "Estações de telecom em operação distribuída.\nCritérios da versão 2026.1: Ativo identificado e documentação técnica disponível.", perfilSetorial: null, requerRevisaoHumana: true, podeConcluir: false });
   });
 
   it("não permite conclusão quando fonte, vigência ou perfil setorial não estão prontos", async () => {
     const caller = appRouter.createCaller(context("reviewer"));
     db.getOrganizationForUser.mockResolvedValue(workspace("reviewer"));
-    db.getRequirementApplicationContext.mockResolvedValue({ version: { id: 304, reviewStatus: "verificada" }, requirement: { sectorProfileId: 8, applicabilityScope: "Estações de telecom em operação distribuída." }, source: { id: 90, title: "Licença ambiental", identifier: "LO-100", verificationStatus: "rascunho", sourceUrl: "https://orgao.example/lo-100" }, profile: { id: 8, name: "Telecom distribuída", versionLabel: "1.0", status: "rascunho" }, versionIsEffective: false, sourceIsEffective: false });
-    await expect(caller.obligations.analysisGate({ requirementVersionId: 304 })).resolves.toEqual(expect.objectContaining({ statusDaBase: "base_insuficiente", requerRevisaoHumana: true, podeConcluir: false, limitesDeEscopo: "Estações de telecom em operação distribuída." }));
+    db.getRequirementApplicationContext.mockResolvedValue({ version: { id: 304, reviewStatus: "verificada" }, requirement: { sectorProfileId: 8, applicabilityScope: "Estações de telecom em operação distribuída.", applicabilityCriteria: "Ativo identificado.", applicabilityStatus: "pendente_revisao_tecnica" }, source: { id: 90, title: "Licença ambiental", identifier: "LO-100", verificationStatus: "rascunho", sourceUrl: "https://orgao.example/lo-100", jurisdiction: "São Paulo", authorityLevel: "estadual", officialOriginStatus: "oficial" }, profile: { id: 8, name: "Telecom distribuída", versionLabel: "1.0", status: "rascunho" }, versionIsEffective: false, sourceIsEffective: false });
+    await expect(caller.obligations.analysisGate({ requirementVersionId: 304 })).resolves.toEqual(expect.objectContaining({ statusDaBase: "base_insuficiente", requerRevisaoHumana: true, podeConcluir: false }));
   });
 
   it("rejeita criação de obrigação quando o helper identifica requisito não verificado", async () => {
@@ -210,6 +216,17 @@ describe("team and assignment procedures", () => {
     db.getOrganizationForUser.mockResolvedValue(workspace("analyst"));
     db.createObligationInstance.mockRejectedValue(new Error("Somente versões verificadas podem gerar uma obrigação."));
     await expect(caller.obligations.applyRequirement({ requirementVersionId: 305, scopeJustification: "Escopo aplicável à estação e à operação distribuída.", scopeConfirmed: true })).rejects.toThrow("versões verificadas");
+  });
+
+  it("rejeita diretamente aplicação e decisão quando a fonte é incompleta ou há conflito pendente", async () => {
+    const caller = appRouter.createCaller(context("reviewer"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("reviewer"));
+    db.createObligationInstance.mockRejectedValue(new Error("A fonte exige jurisdição antes do uso no motor."));
+    await expect(caller.obligations.applyRequirement({ requirementVersionId: 305, scopeJustification: "Escopo aplicável à estação e à operação distribuída.", scopeConfirmed: true })).rejects.toThrow("jurisdição");
+    db.decideObligation.mockRejectedValueOnce(new Error("A origem da fonte precisa ser classificada antes do uso no motor."));
+    await expect(caller.obligations.decide({ obligationId: 307, requirementVersionId: 308, decision: "cumprida", rationale: "A decisão foi bloqueada porque a origem da fonte ainda não foi classificada." })).rejects.toThrow("origem da fonte");
+    db.decideObligation.mockRejectedValue(new Error("Existe conflito de fonte pendente de revisão técnica."));
+    await expect(caller.obligations.decide({ obligationId: 307, requirementVersionId: 308, decision: "cumprida", rationale: "Fonte e versão revisadas, mas o conflito normativo segue pendente." })).rejects.toThrow("conflito de fonte pendente");
   });
 
   it("rejeita aplicação sem confirmação humana explícita do escopo", async () => {
@@ -223,6 +240,28 @@ describe("team and assignment procedures", () => {
     db.getOrganizationForUser.mockResolvedValue(workspace("reviewer"));
     db.getSectorProfileForOrganization.mockResolvedValue({ id: 8, name: "Telecom distribuída", versionLabel: "1.0", status: "ativo", scopeDescription: "Sites distribuídos de telecom." });
     await expect(caller.obligations.profileAnalysisGate({ profileId: 8 })).resolves.toEqual(expect.objectContaining({ statusDaBase: "perfil_sem_base_documental", fontes: [], requerRevisaoHumana: true, podeConcluir: false }));
+  });
+
+  it("mantém a análise em base insuficiente quando existe conflito normativo pendente", async () => {
+    const caller = appRouter.createCaller(context("reviewer"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("reviewer"));
+    db.hasPendingSourceConflict.mockResolvedValue(true);
+    db.getRequirementApplicationContext.mockResolvedValue({ version: { id: 304, reviewStatus: "verificada" }, requirement: { applicabilityScope: "Estações de telecom.", applicabilityCriteria: "Ativo identificado.", applicabilityStatus: "aplicavel_confirmada" }, source: { id: 90, title: "Fonte oficial", identifier: "Lei 15.190", verificationStatus: "verificada", sourceUrl: "https://www.planalto.gov.br", jurisdiction: "Federal", authorityLevel: "federal", officialOriginStatus: "oficial" }, profile: null, versionIsEffective: true, sourceIsEffective: true });
+    await expect(caller.obligations.analysisGate({ requirementVersionId: 304 })).resolves.toEqual(expect.objectContaining({ statusDaBase: "base_insuficiente", podeConcluir: false }));
+  });
+
+  it("exige critérios de aplicabilidade e localizador do texto para criar registros rastreáveis", async () => {
+    const caller = appRouter.createCaller(context("analyst"));
+    await expect(caller.obligations.createRequirement({ sourceId: 90, code: "LIC-001", title: "Requisito de teste", applicabilityScope: "Ativo de telecom identificado." } as never)).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(caller.obligations.createVersion({ requirementId: 91, versionLabel: "1.0", sourceExcerpt: "Trecho documental rastreável para teste." } as never)).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("restringe revisão de aplicabilidade, conflitos e onboarding aos perfis autorizados", async () => {
+    const analyst = appRouter.createCaller(context("analyst"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("analyst"));
+    await expect(analyst.obligations.reviewApplicability({ requirementId: 90, status: "aplicavel_confirmada", rationale: "Escopo e ativo confirmados em documentação técnica." })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(analyst.obligations.resolveSourceConflict({ conflictId: 91, status: "resolvido", rationale: "Hierarquia e vigência confirmadas pela fonte oficial." })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(analyst.obligations.updateOnboarding({ sourceCatalogReady: true, assetContextReady: false, evidencePackageReady: false, technicalReviewReady: false, currentStep: "fontes" })).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
   it("permite atribuir uma obrigação somente por perfil de gestão organizacional", async () => {
