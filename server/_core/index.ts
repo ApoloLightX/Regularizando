@@ -9,6 +9,18 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
+const apiWindows = new Map<string, { count: number; resetAt: number }>();
+function apiRateLimit(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const now = Date.now();
+  const key = req.ip || req.socket.remoteAddress || "unknown";
+  const current = apiWindows.get(key);
+  const entry = !current || current.resetAt <= now ? { count: 0, resetAt: now + 60_000 } : current;
+  entry.count += 1;
+  apiWindows.set(key, entry);
+  if (entry.count > 120) return res.status(429).json({ error: "Muitas requisições; tente novamente em instantes." });
+  next();
+}
+
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
@@ -39,6 +51,7 @@ async function startServer() {
   // tRPC API
   app.use(
     "/api/trpc",
+    apiRateLimit,
     createExpressMiddleware({
       router: appRouter,
       createContext,

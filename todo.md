@@ -53,3 +53,4 @@
 - [ ] Implementar testes negativos de tenant para leitura, vínculo, alteração, revisão e download de recursos da organização B.
 - [ ] Criar audit log append-only para ações sensíveis e documentar baseline de retenção, exclusão, recuperação e resposta a incidentes.
 - [ ] Definir rate limiting para rotas públicas, autenticação e upload, além de confirmar recursos de MFA e verificação de e-mail do provedor de identidade.
+- [x] Documentar a operação do piloto com OAuth Manus, incluindo pré-requisitos de identidade, backup/restauração, retenção, atendimento LGPD e resposta a incidentes.
