@@ -46,3 +46,10 @@
 - [x] Executar e registrar uma auditoria explícita de teclado, ordem de foco, contraste e comportamento dos CTAs públicos.
 - [x] Expandir a auditoria headless até os CTAs principais e validar foco, destino e contraste dos controles interativos.
 - [x] Assegurar por teste o destino esperado dos CTAs e o contraste de seus estados normal, foco e desabilitado.
+- [x] Comparar o feedback externo de segurança com a arquitetura MySQL/TiDB, OAuth Manus e storage S3 efetivamente usada.
+- [x] Auditar autorização por organização, exposição de segredos e fluxo de arquivos privados com testes verificáveis.
+- [x] Definir uma fase P0 de hardening para dados reais: logs de auditoria, retenção/exclusão, recuperação, limites de abuso e governança LGPD.
+- [ ] Substituir o proxy genérico de `/manus-storage/*` por download autorizado de evidências com URL temporária e teste cross-tenant.
+- [ ] Implementar testes negativos de tenant para leitura, vínculo, alteração, revisão e download de recursos da organização B.
+- [ ] Criar audit log append-only para ações sensíveis e documentar baseline de retenção, exclusão, recuperação e resposta a incidentes.
+- [ ] Definir rate limiting para rotas públicas, autenticação e upload, além de confirmar recursos de MFA e verificação de e-mail do provedor de identidade.
