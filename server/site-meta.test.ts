@@ -13,6 +13,8 @@ describe("site metadata", () => {
   it("keeps private surfaces out of search indexes and responds correctly to unknown paths", () => {
     expect(getSiteMeta("/dashboard").noindex).toBe(true);
     expect(getSiteMeta("/evidencias").noindex).toBe(true);
+    expect(getSiteMeta("/obrigacoes").noindex).toBe(true);
+    expect(getSiteMeta("/fontes").noindex).toBe(true);
     expect(getSiteMeta("/convites/token-unico").noindex).toBe(true);
     expect(getSiteMeta("/rota-inexistente").notFound).toBe(true);
   });

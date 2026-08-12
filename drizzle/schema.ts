@@ -230,6 +230,161 @@ export const reviewRequests = mysqlTable("reviewRequests", {
   foreignKey({ columns: [table.reviewerUserId], foreignColumns: [users.id], name: "reviewer_user_fk" }).onDelete("set null"),
 ]);
 
+/** Perfil contextual da organização; orienta o vocabulário sem substituir a fonte documental. */
+export const sectorProfiles = mysqlTable("sectorProfiles", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  sector: mysqlEnum("sector", ["telecom", "infraestrutura", "industria", "consultoria", "outro"]).notNull(),
+  name: varchar("name", { length: 160 }).notNull(),
+  versionLabel: varchar("versionLabel", { length: 48 }).notNull(),
+  scopeDescription: text("scopeDescription").notNull(),
+  status: mysqlEnum("status", ["rascunho", "ativo", "arquivado"]).default("rascunho").notNull(),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("sector_profile_org_version_unique").on(table.organizationId, table.sector, table.versionLabel),
+  index("sector_profile_org_status_idx").on(table.organizationId, table.status),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "sector_profile_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.createdByUserId], foreignColumns: [users.id], name: "sector_profile_creator_fk" }),
+]);
+
+/** Fonte primária a partir da qual requisitos podem ser definidos e revisados. */
+export const requirementSources = mysqlTable("requirementSources", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  title: varchar("title", { length: 260 }).notNull(),
+  issuer: varchar("issuer", { length: 180 }).notNull(),
+  sourceType: mysqlEnum("sourceType", ["norma", "licenca", "condicionante", "termo_referencia", "oficio", "orientacao_tecnica", "outro"]).notNull(),
+  identifier: varchar("identifier", { length: 180 }).notNull(),
+  sourceUrl: varchar("sourceUrl", { length: 700 }),
+  publicationDate: timestamp("publicationDate"),
+  effectiveFrom: timestamp("effectiveFrom"),
+  effectiveTo: timestamp("effectiveTo"),
+  verificationStatus: mysqlEnum("verificationStatus", ["rascunho", "em_revisao", "verificada", "arquivada"]).default("rascunho").notNull(),
+  verifiedByUserId: int("verifiedByUserId"),
+  verifiedAt: timestamp("verifiedAt"),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("requirement_source_org_identifier_unique").on(table.organizationId, table.identifier),
+  index("requirement_source_org_status_idx").on(table.organizationId, table.verificationStatus),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "requirement_source_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.createdByUserId], foreignColumns: [users.id], name: "requirement_source_creator_fk" }),
+  foreignKey({ columns: [table.verifiedByUserId], foreignColumns: [users.id], name: "requirement_source_verifier_fk" }).onDelete("set null"),
+]);
+
+/** Identidade estável de um requisito, sempre apoiada em uma fonte primária. */
+export const requirements = mysqlTable("requirements", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  sourceId: int("sourceId").notNull(),
+  sectorProfileId: int("sectorProfileId"),
+  code: varchar("code", { length: 100 }).notNull(),
+  title: varchar("title", { length: 260 }).notNull(),
+  applicabilityScope: text("applicabilityScope").notNull(),
+  status: mysqlEnum("status", ["rascunho", "em_revisao", "ativo", "arquivado"]).default("rascunho").notNull(),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("requirement_org_code_unique").on(table.organizationId, table.code),
+  index("requirement_org_status_idx").on(table.organizationId, table.status),
+  index("requirement_source_idx").on(table.sourceId),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "requirement_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.sourceId], foreignColumns: [requirementSources.id], name: "requirement_source_fk" }).onDelete("restrict"),
+  foreignKey({ columns: [table.sectorProfileId], foreignColumns: [sectorProfiles.id], name: "requirement_profile_fk" }).onDelete("set null"),
+  foreignKey({ columns: [table.createdByUserId], foreignColumns: [users.id], name: "requirement_creator_fk" }),
+]);
+
+/** Conteúdo versionado e revisável; apenas versões verificadas podem apoiar decisões de conformidade. */
+export const requirementVersions = mysqlTable("requirementVersions", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  requirementId: int("requirementId").notNull(),
+  versionLabel: varchar("versionLabel", { length: 48 }).notNull(),
+  sourceExcerpt: text("sourceExcerpt").notNull(),
+  interpretationNotes: text("interpretationNotes"),
+  effectiveFrom: timestamp("effectiveFrom"),
+  effectiveTo: timestamp("effectiveTo"),
+  reviewStatus: mysqlEnum("reviewStatus", ["rascunho", "em_revisao", "verificada", "obsoleta"]).default("rascunho").notNull(),
+  reviewedByUserId: int("reviewedByUserId"),
+  reviewedAt: timestamp("reviewedAt"),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("requirement_version_unique").on(table.requirementId, table.versionLabel),
+  index("requirement_version_org_status_idx").on(table.organizationId, table.reviewStatus),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "requirement_version_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.requirementId], foreignColumns: [requirements.id], name: "requirement_version_requirement_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.createdByUserId], foreignColumns: [users.id], name: "requirement_version_creator_fk" }),
+  foreignKey({ columns: [table.reviewedByUserId], foreignColumns: [users.id], name: "requirement_version_reviewer_fk" }).onDelete("set null"),
+]);
+
+/** Aplicação concreta de uma versão a uma organização, site ou licença, com responsável e prazo. */
+export const obligationInstances = mysqlTable("obligationInstances", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  requirementVersionId: int("requirementVersionId").notNull(),
+  siteId: int("siteId"),
+  licenseId: int("licenseId"),
+  scopeJustification: text("scopeJustification").notNull(),
+  dueDate: timestamp("dueDate"),
+  responsibleUserId: int("responsibleUserId"),
+  status: mysqlEnum("status", ["pendente_validacao", "aberta", "em_andamento", "aguardando_revisao", "cumprida", "nao_aplicavel"]).default("pendente_validacao").notNull(),
+  evidenceStatus: mysqlEnum("evidenceStatus", ["ausente", "enviada", "verificada", "rejeitada"]).default("ausente").notNull(),
+  createdByUserId: int("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  index("obligation_org_status_due_idx").on(table.organizationId, table.status, table.dueDate),
+  index("obligation_requirement_version_idx").on(table.requirementVersionId),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "obligation_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.requirementVersionId], foreignColumns: [requirementVersions.id], name: "obligation_requirement_version_fk" }).onDelete("restrict"),
+  foreignKey({ columns: [table.siteId], foreignColumns: [sites.id], name: "obligation_site_fk" }).onDelete("set null"),
+  foreignKey({ columns: [table.licenseId], foreignColumns: [licenses.id], name: "obligation_license_fk" }).onDelete("set null"),
+  foreignKey({ columns: [table.responsibleUserId], foreignColumns: [users.id], name: "obligation_responsible_fk" }).onDelete("set null"),
+  foreignKey({ columns: [table.createdByUserId], foreignColumns: [users.id], name: "obligation_creator_fk" }),
+]);
+
+/** Vínculo auditável entre evidência existente e obrigação aplicada. */
+export const obligationEvidenceLinks = mysqlTable("obligationEvidenceLinks", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  obligationId: int("obligationId").notNull(),
+  evidenceId: int("evidenceId").notNull(),
+  evidenceRole: mysqlEnum("evidenceRole", ["comprovacao", "fonte", "complemento"]).default("comprovacao").notNull(),
+  linkedByUserId: int("linkedByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("obligation_evidence_unique").on(table.obligationId, table.evidenceId),
+  index("obligation_evidence_org_idx").on(table.organizationId),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "obligation_evidence_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.obligationId], foreignColumns: [obligationInstances.id], name: "obligation_evidence_obligation_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.evidenceId], foreignColumns: [evidences.id], name: "obligation_evidence_evidence_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.linkedByUserId], foreignColumns: [users.id], name: "obligation_evidence_linker_fk" }),
+]);
+
+/** Decisão humana imutável sobre o estado de uma obrigação e a versão que a fundamenta. */
+export const obligationDecisions = mysqlTable("obligationDecisions", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  obligationId: int("obligationId").notNull(),
+  requirementVersionId: int("requirementVersionId").notNull(),
+  decision: mysqlEnum("decision", ["cumprida", "nao_cumprida", "nao_aplicavel", "requer_revisao"]).notNull(),
+  rationale: text("rationale").notNull(),
+  decidedByUserId: int("decidedByUserId").notNull(),
+  decidedAt: timestamp("decidedAt").defaultNow().notNull(),
+}, (table) => [
+  index("obligation_decision_org_idx").on(table.organizationId, table.decidedAt),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "obligation_decision_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.obligationId], foreignColumns: [obligationInstances.id], name: "obligation_decision_obligation_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.requirementVersionId], foreignColumns: [requirementVersions.id], name: "obligation_decision_version_fk" }).onDelete("restrict"),
+  foreignKey({ columns: [table.decidedByUserId], foreignColumns: [users.id], name: "obligation_decision_user_fk" }),
+]);
+
 /** Eventos operacionais sensíveis, mantidos como trilha append-only por organização. */
 export const auditEvents = mysqlTable("auditEvents", {
   id: int("id").autoincrement().primaryKey(),

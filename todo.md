@@ -67,3 +67,14 @@
 - [x] Exibir uma fonte e data de atualização explícitas na demonstração pública de Território/GIS.
 - [x] Enxugar o comprimento das seções de camadas na experiência mobile sem perder hierarquia de conteúdo.
 - [x] Atualizar a página de segurança apenas com controles efetivamente implementados e testados, preservando as lacunas operacionais como pendências.
+- [ ] Definir fonte normativa, versão, vigência, escopo e perfil setorial para cada requisito do motor de obrigações.
+- [x] Criar schema e migração para fontes, requisitos versionados, instâncias de obrigação e vínculos de evidência.
+- [x] Implementar APIs organizacionais para criar, aplicar, revisar e decidir obrigações com rastreabilidade de fonte.
+- [x] Criar perfis setoriais versionados para telecom, infraestrutura, indústria, consultoria e outros, sem respostas livres sem fonte.
+- [x] Construir painel de obrigações com prazo, responsável, estado de evidência, revisão humana e decisão registrada.
+- [x] Adicionar testes que rejeitem análise sem fonte, requisito fora da vigência/escopo e acesso cross-tenant a obrigações.
+- [x] Implementar bloqueio verificável para qualquer análise baseada em perfil setorial sem fonte e versão associadas.
+- [x] Sincronizar o estado de evidência da obrigação com vínculos e decisões humanas de revisão.
+- [x] Exibir no painel de obrigações o estado real de revisão humana das evidências vinculadas.
+- [x] Exigir confirmação humana explícita de escopo antes de aplicar um requisito e testar a rejeição sem essa confirmação.
+- [x] Proibir de forma testável conclusões baseadas somente em perfil setorial, sem requisito, versão e fonte verificados.

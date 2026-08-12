@@ -12,11 +12,13 @@ import Contact from "./pages/Contact";
 import Team from "./pages/Team";
 import InviteAccept from "./pages/InviteAccept";
 import Evidences from "./pages/Evidences";
+import Obligations from "./pages/Obligations";
 import PilotTelecom from "./pages/PilotTelecom";
 import Product from "./pages/Product";
 import UseCases from "./pages/UseCases";
 import DocumentHead from "./components/DocumentHead";
 import Security from "./pages/Security";
+import Sources from "./pages/Sources";
 import MarketingFooter from "./components/MarketingFooter";
 
 function Router() {
@@ -31,6 +33,8 @@ function Router() {
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/comecar"} component={Dashboard} />
       <Route path={"/evidencias"} component={Evidences} />
+      <Route path={"/obrigacoes"} component={Obligations} />
+      <Route path={"/fontes"} component={Sources} />
       <Route path={"/equipe"} component={Team} />
       <Route path={"/convites/:token"} component={InviteAccept} />
       <Route path={"/contato"} component={Contact} />

@@ -41,7 +41,7 @@ const publicPages: Record<string, SiteMeta> = {
 };
 
 export function isPrivatePath(path: string) {
-  return ["/dashboard", "/comecar", "/evidencias", "/equipe"].some((item) => path === item || path.startsWith(`${item}/`)) || path.startsWith("/convites/");
+  return ["/dashboard", "/comecar", "/evidencias", "/equipe", "/obrigacoes", "/fontes"].some((item) => path === item || path.startsWith(`${item}/`)) || path.startsWith("/convites/");
 }
 
 export function getSiteMeta(inputUrl: string): SiteMeta {

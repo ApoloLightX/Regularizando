@@ -5,8 +5,10 @@ import { afterEach } from "vitest";
 
 const db = vi.hoisted(() => ({
   acceptOrganizationInvite: vi.fn(),
+  activateSectorProfile: vi.fn(),
   assertEntityBelongsToOrganization: vi.fn(),
   assignCapaResponsible: vi.fn(),
+  assignObligationResponsible: vi.fn(),
   assignReviewResponsible: vi.fn(),
   createCapaAction: vi.fn(),
   createAuditEvent: vi.fn(),
@@ -15,18 +17,33 @@ const db = vi.hoisted(() => ({
   createEvidence: vi.fn(),
   createIncident: vi.fn(),
   createLicense: vi.fn(),
+  createObligationInstance: vi.fn(),
   createOrganizationForUser: vi.fn(),
   createOrganizationInvite: vi.fn(),
   createReviewRequest: vi.fn(),
+  createRequirement: vi.fn(),
+  createRequirementSource: vi.fn(),
+  createRequirementVersion: vi.fn(),
+  createSectorProfile: vi.fn(),
   createSite: vi.fn(),
+  decideObligation: vi.fn(),
   decideReviewRequest: vi.fn(),
   getDashboardData: vi.fn(),
   getEvidenceForOrganization: vi.fn(),
   getInviteByHash: vi.fn(),
   getMemberOfOrganizationByEmail: vi.fn(),
   getOrganizationForUser: vi.fn(),
+  getObligationOverview: vi.fn(),
+  getRequirementApplicationContext: vi.fn(),
+  getRequirementForOrganization: vi.fn(),
+  getRequirementVersionForOrganization: vi.fn(),
+  getSectorProfileForOrganization: vi.fn(),
+  getSourceForOrganization: vi.fn(),
   getTeamOverview: vi.fn(),
+  linkEvidenceToObligation: vi.fn(),
   revokeOrganizationInvite: vi.fn(),
+  verifyRequirementSource: vi.fn(),
+  verifyRequirementVersion: vi.fn(),
 }));
 
 vi.mock("./db", () => db);
@@ -172,5 +189,68 @@ describe("team and assignment procedures", () => {
     db.assignReviewResponsible.mockRejectedValue(new Error("A revisão não pertence à organização atual."));
     await expect(caller.capa.assignResponsible({ capaId: 906, responsibleUserId: 22 })).rejects.toThrow("não pertence à organização atual");
     await expect(caller.reviews.assignResponsible({ reviewId: 907, reviewerUserId: 22 })).rejects.toThrow("não pertence à organização atual");
+  });
+
+  it("permite analisar a base apenas como contexto e mantém a decisão humana obrigatória", async () => {
+    const caller = appRouter.createCaller(context("reviewer"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("reviewer"));
+    db.getRequirementApplicationContext.mockResolvedValue({ version: { id: 304, reviewStatus: "verificada" }, requirement: { applicabilityScope: "Estações de telecom em operação distribuída." }, source: { id: 90, title: "Licença ambiental", identifier: "LO-100", verificationStatus: "verificada", sourceUrl: null }, profile: null, versionIsEffective: true, sourceIsEffective: true });
+    await expect(caller.obligations.analysisGate({ requirementVersionId: 304 })).resolves.toEqual({ statusDaBase: "verificada", fontes: [{ id: 90, titulo: "Licença ambiental", identificador: "LO-100", status: "verificada", url: null }], limitesDeEscopo: "Estações de telecom em operação distribuída.", perfilSetorial: null, requerRevisaoHumana: true, podeConcluir: false });
+  });
+
+  it("não permite conclusão quando fonte, vigência ou perfil setorial não estão prontos", async () => {
+    const caller = appRouter.createCaller(context("reviewer"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("reviewer"));
+    db.getRequirementApplicationContext.mockResolvedValue({ version: { id: 304, reviewStatus: "verificada" }, requirement: { sectorProfileId: 8, applicabilityScope: "Estações de telecom em operação distribuída." }, source: { id: 90, title: "Licença ambiental", identifier: "LO-100", verificationStatus: "rascunho", sourceUrl: "https://orgao.example/lo-100" }, profile: { id: 8, name: "Telecom distribuída", versionLabel: "1.0", status: "rascunho" }, versionIsEffective: false, sourceIsEffective: false });
+    await expect(caller.obligations.analysisGate({ requirementVersionId: 304 })).resolves.toEqual(expect.objectContaining({ statusDaBase: "base_insuficiente", requerRevisaoHumana: true, podeConcluir: false, limitesDeEscopo: "Estações de telecom em operação distribuída." }));
+  });
+
+  it("rejeita criação de obrigação quando o helper identifica requisito não verificado", async () => {
+    const caller = appRouter.createCaller(context("analyst"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("analyst"));
+    db.createObligationInstance.mockRejectedValue(new Error("Somente versões verificadas podem gerar uma obrigação."));
+    await expect(caller.obligations.applyRequirement({ requirementVersionId: 305, scopeJustification: "Escopo aplicável à estação e à operação distribuída.", scopeConfirmed: true })).rejects.toThrow("versões verificadas");
+  });
+
+  it("rejeita aplicação sem confirmação humana explícita do escopo", async () => {
+    const caller = appRouter.createCaller(context("analyst"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("analyst"));
+    await expect(caller.obligations.applyRequirement({ requirementVersionId: 305, scopeJustification: "Escopo aplicável à estação e à operação distribuída.", scopeConfirmed: false })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("proíbe conclusão baseada somente em perfil setorial", async () => {
+    const caller = appRouter.createCaller(context("reviewer"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("reviewer"));
+    db.getSectorProfileForOrganization.mockResolvedValue({ id: 8, name: "Telecom distribuída", versionLabel: "1.0", status: "ativo", scopeDescription: "Sites distribuídos de telecom." });
+    await expect(caller.obligations.profileAnalysisGate({ profileId: 8 })).resolves.toEqual(expect.objectContaining({ statusDaBase: "perfil_sem_base_documental", fontes: [], requerRevisaoHumana: true, podeConcluir: false }));
+  });
+
+  it("permite atribuir uma obrigação somente por perfil de gestão organizacional", async () => {
+    const analyst = appRouter.createCaller(context("analyst"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("analyst"));
+    await expect(analyst.obligations.assignResponsible({ obligationId: 306, responsibleUserId: 12 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    const owner = appRouter.createCaller(context("owner"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("owner"));
+    await expect(owner.obligations.assignResponsible({ obligationId: 306, responsibleUserId: 12 })).resolves.toEqual({ success: true });
+    expect(db.assignObligationResponsible).toHaveBeenCalledWith({ obligationId: 306, organizationId: 7, responsibleUserId: 12 });
+    expect(db.createAuditEvent).toHaveBeenCalledWith(expect.objectContaining({ action: "OBLIGATION_RESPONSIBLE_ASSIGNED", resourceId: 306, organizationId: 7 }));
+  });
+
+  it("exige revisor técnico e justificativa para verificar fonte e decidir obrigação", async () => {
+    const analyst = appRouter.createCaller(context("analyst"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("analyst"));
+    await expect(analyst.obligations.verifySource({ sourceId: 306 })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    const reviewer = appRouter.createCaller(context("reviewer"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("reviewer"));
+    await expect(reviewer.obligations.decide({ obligationId: 307, requirementVersionId: 308, decision: "cumprida", rationale: "curta" })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("rejeita acesso cross-tenant a versão e vínculo de evidência de obrigação", async () => {
+    const caller = appRouter.createCaller(context("reviewer"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("reviewer"));
+    db.getRequirementApplicationContext.mockRejectedValue(new Error("A versão do requisito não pertence à organização atual."));
+    await expect(caller.obligations.analysisGate({ requirementVersionId: 309 })).rejects.toThrow("não pertence à organização atual");
+    db.linkEvidenceToObligation.mockRejectedValue(new Error("A obrigação não pertence à organização atual."));
+    await expect(caller.obligations.linkEvidence({ obligationId: 310, evidenceId: 311 })).rejects.toThrow("não pertence à organização atual");
   });
 });

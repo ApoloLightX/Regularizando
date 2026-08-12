@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { createPilotRequest } = vi.hoisted(() => ({ createPilotRequest: vi.fn() }));
-vi.mock("./db", () => ({ createPilotRequest }));
+vi.mock("./db", async (importOriginal) => ({ ...(await importOriginal<typeof import("./db")>()), createPilotRequest }));
 
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
