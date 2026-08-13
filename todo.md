@@ -92,3 +92,12 @@
 - [x] Cobrir diretamente a rejeição de aplicação ou decisão quando houver conflito normativo pendente.
 - [x] Exibir no onboarding o pacote documental real exigido para o primeiro ativo, sem preenchimento automático ou dados simulados.
 - [x] Cobrir diretamente a rejeição de decisão de obrigação quando a fonte não tiver origem ou jurisdição válidas.
+- [x] Substituir a ilustração abstrata de Território/GIS por uma explicação visual direta do que o módulo analisa e de seus limites.
+- [x] Explicitar que camadas, sobreposições e alertas só são ativados com coordenadas e fontes reais do ativo, sem simular resultados.
+- [x] Validar a compreensão e a responsividade da comunicação revisada de Território/GIS em tela móvel.
+- [x] Executar uma verificação móvel visual bem-sucedida da seção Território/GIS revisada em viewport de aproximadamente 375 px.
+- [x] Reforçar o teste de regressão de Território/GIS com a estrutura explícita de fluxo territorial e limites de dados reais.
+- [x] Criar uma validação móvel reproduzível de 375 px para a seção Território/GIS e persistir a evidência no repositório.
+- [x] Verificar explicitamente em teste os três passos do fluxo territorial revisado e a guarda contra resultados sem dados reais.
+- [x] Executar uma validação headless da homepage em viewport 375×812 e registrar a renderização da seção Território/GIS sem aparência de mapa ativo.
+- [x] Persistir no repositório um procedimento reproduzível para a verificação móvel real do módulo Território/GIS.

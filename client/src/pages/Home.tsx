@@ -6,7 +6,6 @@ import {
   ArrowDownRight,
   ArrowRight,
   Check,
-  ChevronDown,
   CircleAlert,
   FileCheck2,
   Globe2,
@@ -25,7 +24,7 @@ const ehsUrl = "/manus-storage/regularizando-ehs-field_bce54276.png";
 const esgUrl = "/manus-storage/regularizando-esg-evidence_9448fc14.png";
 const gisUrl = "/manus-storage/regularizando-gis-territory_639b4fd3.png";
 
-type ModuleKey = "radar" | "ehs" | "esg";
+type ModuleKey = "radar" | "ehs" | "esg" | "territory";
 
 const modules: Record<ModuleKey, { eyebrow: string; title: string; body: string; image: string; points: string[]; icon: typeof Radar }> = {
   radar: {
@@ -51,6 +50,14 @@ const modules: Record<ModuleKey, { eyebrow: string; title: string; body: string;
     image: esgUrl,
     points: ["Catálogo de métricas e unidades", "Escopos, fontes e metodologia", "Evidências prontas para revisão"],
     icon: Leaf,
+  },
+  territory: {
+    eyebrow: "04 / Módulo: Território / GIS",
+    title: "Entenda o local antes de decidir o próximo passo.",
+    body: "Não é um mapa pronto nem uma conclusão automática. O módulo começa quando o ativo tem localização e fontes geográficas reais vinculadas para revisão técnica.",
+    image: gisUrl,
+    points: ["Entrada: endereço ou coordenadas do ativo", "Cruzamento: camadas oficiais com fonte e data", "Saída: sinal para revisão, nunca decisão automática"],
+    icon: Globe2,
   },
 };
 
@@ -177,20 +184,19 @@ export default function Home() {
               {(Object.keys(modules) as ModuleKey[]).map((key) => {
                 const item = modules[key];
                 const Icon = item.icon;
-                return <button className={`module-tab ${activeModule === key ? "module-tab--active" : ""}`} type="button" role="tab" aria-selected={activeModule === key} key={key} onClick={() => selectModule(key)}><span className="module-tab__index">{item.eyebrow.slice(0, 2)}</span><span className="module-tab__copy"><strong>{item.eyebrow.slice(5)}</strong><small>{key === "radar" ? "Requisitos e licenças" : key === "ehs" ? "Campo e operação" : "Métricas e disclosure"}</small></span><Icon size={19} /></button>;
+                return <button className={`module-tab ${activeModule === key ? "module-tab--active" : ""}`} type="button" role="tab" aria-selected={activeModule === key} key={key} onClick={() => selectModule(key)}><span className="module-tab__index">{item.eyebrow.slice(0, 2)}</span><span className="module-tab__copy"><strong>{item.eyebrow.slice(5)}</strong><small>{key === "radar" ? "Requisitos e licenças" : key === "ehs" ? "Campo e operação" : key === "esg" ? "Métricas e disclosure" : "Localização e fontes reais"}</small></span><Icon size={19} /></button>;
               })}
-              <div className="module-tab module-tab--territory"><span className="module-tab__index">04</span><span className="module-tab__copy"><strong>Território / GIS</strong><small>Camadas e contexto ambiental</small></span><Globe2 size={19} /></div>
             </div>
             <div className="module-detail" key={activeModule}>
-              <div className={`module-detail__visual module-detail__visual--${activeModule}`}><div className="visual-media" role="img" aria-label={`Visual do módulo ${active.eyebrow.slice(5)}`} /><div className="visual-tag"><ActiveIcon size={14} /> Camada ativa</div></div>
+              <div className={`module-detail__visual module-detail__visual--${activeModule}`}>{activeModule === "territory" ? <div className="territory-module-explainer"><span>1. Local do ativo</span><ArrowRight size={16} /><span>2. Camadas oficiais</span><ArrowRight size={16} /><span>3. Revisão técnica</span></div> : <div className="visual-media" role="img" aria-label={`Visual do módulo ${active.eyebrow.slice(5)}`} />}<div className="visual-tag"><ActiveIcon size={14} /> {activeModule === "territory" ? "Dados reais necessários" : "Camada ativa"}</div></div>
               <div className="module-detail__copy"><p className="eyebrow eyebrow--light">{active.eyebrow}</p><h3>{active.title}</h3><p>{active.body}</p><ul>{active.points.map((point) => <li key={point}><Check size={15} /> {point}</li>)}</ul><button className="arrow-link arrow-link--light" type="button" onClick={() => setLocation("/dashboard")}>Ver esta camada em ação <ArrowRight size={16} /></button></div>
             </div>
           </div>
         </section>
 
         <section className="territory-section" id="territorio" aria-labelledby="territory-title">
-          <div className="territory-visual"><div className="territory-media" role="img" aria-label="Demonstração GIS de um empreendimento com área de influência, recursos hídricos e unidade de conservação"><span className="gis-site">● Empreendimento</span><span className="gis-river">~</span><span className="gis-protected">Unidade de conservação</span></div><span className="map-chip map-chip--top"><span className="map-chip-dot" /> Raio analisado: 10 km</span><div className="gis-layer-list"><span>✓ Unidades de conservação</span><span>✓ Recursos hídricos</span><span>✓ Uso do solo</span><span>✓ Áreas protegidas</span></div><span className="map-chip map-chip--bottom">2 sobreposições relevantes <ChevronDown size={14} /></span></div>
-          <div className="territory-copy"><p className="eyebrow">Módulo de contexto territorial</p><h2 id="territory-title">O território também é uma evidência.</h2><p>Antes de abrir uma frente de trabalho, veja camadas que podem mudar o caminho do licenciamento: unidades de conservação, recursos hídricos, uso do solo e outras sobreposições.</p><div className="territory-stats"><div><strong>10 km</strong><span>raio analisado</span></div><div><strong>02</strong><span>sobreposições</span></div><div><strong>Fonte</strong><span>configurada no piloto</span></div></div><p className="territory-source">Demonstração conceitual · Fonte: base geoespacial definida no piloto · Atualização: 12/08/2026. Cada implantação registra a fonte oficial e a data efetiva da consulta.</p><Link className="arrow-link" href="/piloto-telecom">Planejar o recorte territorial <ArrowRight size={16} /></Link></div>
+          <div className="territory-visual territory-visual--guided" aria-label="Como funciona uma leitura territorial com dados reais"><div className="territory-guide"><p className="territory-guide__label">O que o módulo precisa receber</p><div className="territory-guide__step"><span>01</span><div><strong>Ativo identificado</strong><p>Endereço, município ou coordenadas reais.</p></div></div><div className="territory-guide__step"><span>02</span><div><strong>Camadas com origem</strong><p>Fonte oficial, versão e data da consulta.</p></div></div><div className="territory-guide__step"><span>03</span><div><strong>Leitura para revisão</strong><p>Um sinal de atenção para a equipe, não uma decisão legal automática.</p></div></div><p className="territory-guide__guard">Sem localização e fonte vinculadas, nenhuma camada, alerta ou sobreposição é exibida.</p></div></div>
+          <div className="territory-copy"><p className="eyebrow">Território / GIS, explicado</p><h2 id="territory-title">Não é um mapa decorativo. É contexto para revisar o ativo certo.</h2><p>Quando você informa onde está um ativo, o Regularizando pode organizar a consulta de camadas geográficas relevantes para aquele local. A equipe vê a origem e a data de cada camada antes de decidir se precisa investigar algo.</p><div className="territory-stats"><div><strong>Entrada</strong><span>localização real do ativo</span></div><div><strong>Consulta</strong><span>fontes e data registradas</span></div><div><strong>Saída</strong><span>revisão técnica necessária</span></div></div><p className="territory-source">Demonstração conceitual do fluxo · Atualização: 12/08/2026. Não há mapa, camada, alerta ou resultado territorial ativo nesta página; isso só acontece no piloto com dados reais e fontes identificadas.</p><Link className="arrow-link" href="/piloto-telecom">Planejar uma leitura territorial real <ArrowRight size={16} /></Link></div>
         </section>
 
         <section className="governance-section" id="governanca" aria-labelledby="governance-title">
