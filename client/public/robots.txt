@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /comecar
+Disallow: /evidencias
+Disallow: /equipe
+Disallow: /convites/
+
+Sitemap: https://regulaisaas-hydgpjgu.manus.space/sitemap.xml

@@ -1,0 +1,127 @@
+# Evolução do Regularizando — tarefas
+
+- [x] Auditar as rotas e ações atuais do site e eliminar dead-ends.
+- [x] Evoluir o projeto para full-stack com autenticação e sessão.
+- [x] Conectar o domínio multi-tenant de organizações, usuários, sites, licenças e processos.
+- [x] Implementar upload seguro e organização de evidências por entidade.
+- [x] Criar dashboard interativo com licenças, condicionantes, CAPA, incidentes e indicadores ESG.
+- [x] Adicionar casos de uso detalhados para telecom/infraestrutura e grandes empresas.
+- [x] Criar fluxos de piloto com sites distribuídos, aprovações e responsáveis.
+- [x] Implementar rotas navegáveis para produto, dashboard, casos de uso, piloto e contato.
+- [x] Corrigir CTA para iniciar demonstração sem depender de `mailto:`.
+- [x] Validar typecheck, build, navegação, estados de erro e responsividade.
+- [x] Validar no backend que referências de sites, licenças e entidades vinculadas pertencem à organização atual.
+- [x] Adicionar chaves estrangeiras e regras de integridade para organizações, membros, ativos, processos e evidências.
+- [x] Criar fila de revisão humana para evidências, com estados, responsável e decisões de aprovar ou rejeitar.
+- [x] Adicionar a rota navegável `/contato` para orientar o início de um piloto.
+- [x] Testar rejeições de upload, referência cross-tenant, ausência de organização e revisão sem perfil permitido.
+- [x] Adicionar testes automatizados para as políticas de escopo organizacional e aprovação.
+- [x] Definir papéis, permissões e ciclo de vida para convites por organização.
+- [x] Criar schema, migração e APIs protegidas para convites de equipe.
+- [x] Permitir atribuição de membros específicos a CAPAs e aprovações pendentes.
+- [x] Criar uma área de equipe com criação, aceitação e acompanhamento de convites.
+- [x] Criar seletores de responsável em CAPAs e na fila de aprovação de evidências.
+- [x] Testar autorização, aceitação de convite, atribuições e fluxos de erro.
+- [x] Testar os procedimentos tRPC de criação, revogação, aceite e visualização de convites.
+- [x] Testar os procedimentos tRPC de atribuição de CAPA e revisão, incluindo falhas de permissão.
+- [x] Criar um SKILL.md de continuidade com contexto de produto, arquitetura, regras de segurança e fluxos do Regularizando.
+- [x] Remover resíduos de template e fornecer conteúdo semântico revisável no HTML inicial da landing page.
+- [x] Validar que revisores sem JavaScript conseguem identificar produto, público, funcionalidades e caminhos principais.
+- [x] Verificar o HTML entregue no domínio público e resolver divergência de cache ou versão para revisores externos.
+- [x] Reposicionar a homepage com licenciamento ambiental como porta de entrada e CTA dominante de piloto.
+- [x] Inserir uma demonstração concreta do fluxo documento, requisito, pendência, responsável, evidência e aprovação.
+- [x] Criar uma seção de segurança e governança somente com controles tecnicamente verificáveis.
+- [x] Reestruturar a página de piloto telecom como proposta comercial específica.
+- [x] Organizar casos de uso por persona e setor comprador.
+- [x] Implementar conteúdo, title, descrição, canonical e fallback próprios para cada rota pública.
+- [x] Aplicar noindex e resposta adequada às áreas privadas de dashboard e evidências.
+- [x] Adicionar artefatos básicos de descoberta: robots.txt, sitemap.xml e favicon.
+- [x] Validar páginas públicas sem JavaScript, navegação, acessibilidade e responsividade.
+- [x] Reestruturar `/casos-de-uso` com blocos explícitos para Gestor ambiental, EHS/HSE, ESG e Diretoria/Auditoria.
+- [x] Executar e registrar validação de acessibilidade das páginas públicas: teclado, foco, landmarks, contraste e formulários.
+- [x] Executar auditoria de acessibilidade das páginas públicas com checklist explícito de teclado, foco, landmarks, contraste e links/CTAs.
+- [x] Registrar a condição de formulários públicos e seus estados de erro para a jornada de solicitação de piloto.
+- [x] Adicionar footer semântico às rotas públicas e reforçar a cobertura de landmarks.
+- [x] Registrar e testar uma auditoria de acessibilidade de teclado, foco, contraste, links/CTAs e estados do formulário público.
+- [x] Executar e registrar uma auditoria explícita de teclado, ordem de foco, contraste e comportamento dos CTAs públicos.
+- [x] Expandir a auditoria headless até os CTAs principais e validar foco, destino e contraste dos controles interativos.
+- [x] Assegurar por teste o destino esperado dos CTAs e o contraste de seus estados normal, foco e desabilitado.
+- [x] Comparar o feedback externo de segurança com a arquitetura MySQL/TiDB, OAuth Manus e storage S3 efetivamente usada.
+- [x] Auditar autorização por organização, exposição de segredos e fluxo de arquivos privados com testes verificáveis.
+- [x] Definir uma fase P0 de hardening para dados reais: logs de auditoria, retenção/exclusão, recuperação, limites de abuso e governança LGPD.
+- [x] Substituir o proxy genérico de `/manus-storage/*` por download autorizado de evidências com URL temporária e teste cross-tenant.
+- [x] Implementar testes negativos de tenant para leitura, vínculo, alteração, revisão e download de recursos da organização B.
+- [x] Cobrir leitura protegida e alteração de responsável contra recursos existentes de outra organização.
+- [x] Criar audit log append-only para ações sensíveis e documentar baseline de retenção, exclusão, recuperação e resposta a incidentes.
+- [x] Registrar e testar eventos de auditoria para aceite de convite, criação de organização e decisões críticas restantes do piloto privado.
+- [x] Definir rate limiting em memória para chamadas tRPC, incluindo rotas públicas e upload.
+- [x] Formalizar o bloqueio de dados reais e manter o piloto privado até a confirmação de MFA e verificação de e-mail do provedor OAuth Manus.
+- [x] Restringir e documentar o piloto como acesso privado, exclusivamente para usuários aprovados e convidados pelo administrador da organização.
+- [x] Documentar a operação do piloto com OAuth Manus, incluindo pré-requisitos de identidade, backup/restauração, retenção, atendimento LGPD e resposta a incidentes.
+- [x] Reposicionar a mensagem comercial no motor verificável: obrigação, requisito, prazo, responsável, evidência, revisão e decisão.
+- [x] Renomear Radar regulatório para Licenciamento & Obrigações e substituir visual abstrato por uma demonstração operacional de prazos, pendências e obrigações.
+- [x] Tratar CAPA como terminologia secundária dentro de não conformidades e planos de ação em todas as páginas públicas.
+- [x] Trocar métricas opacas de prontidão e confiança por indicadores explicáveis, fonte documental e revisão técnica.
+- [x] Apresentar Licenciamento como núcleo e Operação/EHS, Indicadores ambientais & ESG e Território/GIS como módulos conectados.
+- [x] Transformar a demonstração de Território em uma leitura GIS concreta com camadas, raio, sobreposições, fonte e data de atualização.
+- [x] Exibir uma fonte e data de atualização explícitas na demonstração pública de Território/GIS.
+- [x] Enxugar o comprimento das seções de camadas na experiência mobile sem perder hierarquia de conteúdo.
+- [x] Atualizar a página de segurança apenas com controles efetivamente implementados e testados, preservando as lacunas operacionais como pendências.
+- [ ] Definir fonte normativa, versão, vigência, escopo e perfil setorial para cada requisito do motor de obrigações.
+- [x] Criar schema e migração para fontes, requisitos versionados, instâncias de obrigação e vínculos de evidência.
+- [x] Implementar APIs organizacionais para criar, aplicar, revisar e decidir obrigações com rastreabilidade de fonte.
+- [x] Criar perfis setoriais versionados para telecom, infraestrutura, indústria, consultoria e outros, sem respostas livres sem fonte.
+- [x] Construir painel de obrigações com prazo, responsável, estado de evidência, revisão humana e decisão registrada.
+- [x] Adicionar testes que rejeitem análise sem fonte, requisito fora da vigência/escopo e acesso cross-tenant a obrigações.
+- [x] Implementar bloqueio verificável para qualquer análise baseada em perfil setorial sem fonte e versão associadas.
+- [x] Sincronizar o estado de evidência da obrigação com vínculos e decisões humanas de revisão.
+- [x] Exibir no painel de obrigações o estado real de revisão humana das evidências vinculadas.
+- [x] Exigir confirmação humana explícita de escopo antes de aplicar um requisito e testar a rejeição sem essa confirmação.
+- [x] Proibir de forma testável conclusões baseadas somente em perfil setorial, sem requisito, versão e fonte verificados.
+- [x] Criar catálogo organizacional de fontes oficiais com jurisdição, hierarquia, URL de origem e versão/vigência verificáveis.
+- [x] Registrar artigo, item ou página, texto original, critérios de aplicabilidade, frequência e evidência esperada em cada versão de requisito.
+- [x] Modelar conflitos de fontes sem resolução automática e obrigar encaminhamento para revisão técnica.
+- [x] Criar um onboarding de fontes e documentos do ativo que mantenha a aplicabilidade como pendente até revisão humana.
+- [x] Adicionar controles SaaS de progresso do onboarding e documentação contextual, sem inserir dados fictícios do cliente.
+- [x] Testar rejeição de obrigação sem metadados de origem, sem confirmação de aplicabilidade ou com conflito normativo não revisado.
+- [x] Versionar critérios de aplicabilidade, frequência e evidência esperada junto ao texto normativo de cada requisito.
+- [x] Testar a rejeição de criação e decisão de obrigação quando a fonte não tiver origem ou jurisdição válidas.
+- [x] Testar a rejeição operacional de obrigação vinculada a conflito normativo pendente.
+- [x] Sincronizar a migração versionada com o campo obrigatório de critérios de aplicabilidade por versão.
+- [x] Cobrir diretamente as rotas de aplicação e decisão contra fonte sem origem ou jurisdição válidas.
+- [x] Cobrir diretamente a rejeição de aplicação ou decisão quando houver conflito normativo pendente.
+- [x] Exibir no onboarding o pacote documental real exigido para o primeiro ativo, sem preenchimento automático ou dados simulados.
+- [x] Cobrir diretamente a rejeição de decisão de obrigação quando a fonte não tiver origem ou jurisdição válidas.
+- [x] Substituir a ilustração abstrata de Território/GIS por uma explicação visual direta do que o módulo analisa e de seus limites.
+- [x] Explicitar que camadas, sobreposições e alertas só são ativados com coordenadas e fontes reais do ativo, sem simular resultados.
+- [x] Validar a compreensão e a responsividade da comunicação revisada de Território/GIS em tela móvel.
+- [x] Executar uma verificação móvel visual bem-sucedida da seção Território/GIS revisada em viewport de aproximadamente 375 px.
+- [x] Reforçar o teste de regressão de Território/GIS com a estrutura explícita de fluxo territorial e limites de dados reais.
+- [x] Criar uma validação móvel reproduzível de 375 px para a seção Território/GIS e persistir a evidência no repositório.
+- [x] Verificar explicitamente em teste os três passos do fluxo territorial revisado e a guarda contra resultados sem dados reais.
+- [x] Executar uma validação headless da homepage em viewport 375×812 e registrar a renderização da seção Território/GIS sem aparência de mapa ativo.
+- [x] Persistir no repositório um procedimento reproduzível para a verificação móvel real do módulo Território/GIS.
+- [x] Criar um catálogo oficial de fontes normativas verificadas, separado dos registros da organização e sem obrigações pré-geradas.
+- [x] Permitir a seleção e a importação rastreável de fontes oficiais para a organização piloto, exigindo confirmação humana de escopo.
+- [x] Testar que o catálogo não cria obrigações automaticamente, não vaza entre organizações e preserva URL, jurisdição, hierarquia e vigência da fonte.
+- [x] Testar a preservação de URL, jurisdição, hierarquia e vigência quando uma fonte oficial é importada para a organização.
+- [x] Testar o isolamento de dados de uma importação oficial contra leitura ou reutilização por outra organização.
+- [x] Comprovar em regressão que uma importação oficial criada pela organização A não pode ser reutilizada pela organização B.
+- [x] Verificar e reforçar o HTML pré-renderizado das rotas públicas para leitores que não executam JavaScript.
+- [x] Garantir títulos, descrições, links e conteúdo útil no HTML inicial, sem depender de hidratação do cliente.
+- [x] Substituir a seção "Um núcleo que conecta módulos" por uma narrativa orientada a problemas, fluxos e resultados operacionais.
+- [x] Validar a nova comunicação em viewport móvel e por extração de HTML sem JavaScript.
+- [x] Mapear e reconciliar o estado do repositório remoto, do banco operacional e da integração Supabase antes de registrar novos eventos.
+- [x] Definir e documentar uma trilha de rastreabilidade para alterações de site, autenticação, segurança, leads e governança, sem registrar segredos ou dados pessoais além do necessário.
+- [x] Implementar registros auditáveis de governança no banco para eventos relevantes do produto e criar cobertura automatizada.
+- [ ] Sincronizar as alterações versionadas do projeto com o repositório GitHub e validar a persistência no Supabase.
+- [x] Documentar controles implementados, limites e pendências de cibersegurança, banco de dados, autenticação, continuidade e resposta a incidentes, sem alegar certificações não obtidas.
+- [x] Documentar a minimização de dados e registrar a captura consentida de solicitações de piloto na trilha de governança.
+- [x] Modelar origem do lead, estágio de qualificação e responsável por qualificação sem expor dados pessoais na réplica externa.
+- [x] Implementar controle de acesso por papel para visualização e gestão de leads, com testes automatizados.
+- [x] Registrar eventos específicos do ciclo de vida do lead — captura, qualificação e mudança de estágio — na trilha de auditoria.
+- [x] Preservar o estágio anterior real do lead em cada mudança de qualificação registrada na auditoria.
+- [x] Cobrir em teste a transição de qualificação após a primeira mudança de estágio do lead.
+- [ ] Registrar no Supabase a matriz de governança e os eventos técnicos relevantes, preservando a separação entre metadados de auditoria e dados pessoais sensíveis.
+- [ ] Implementar primeiro a replicação automática resiliente, com fila de recuperação para eventos relevantes que não possam ser enviados ao Supabase imediatamente.
+- [ ] Implementar depois consolidações por checkpoint, publicação e revisão de segurança para leitura executiva da trilha de auditoria.
