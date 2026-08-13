@@ -19,6 +19,10 @@ import {
   organizationOfficialSourceImports,
   organizations,
   pilotRequests,
+  publicValidationCases,
+  publicValidationFindings,
+  publicValidationRequirements,
+  publicValidationSources,
   requirementSources,
   requirementSourceConflicts,
   requirements,
@@ -168,6 +172,25 @@ export async function createRequirementSource(input: typeof requirementSources.$
 export async function getOfficialSourceCatalog() {
   const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
   return db.select().from(officialSourceCatalog).where(eq(officialSourceCatalog.validationStatus, "verificada")).orderBy(officialSourceCatalog.identifier);
+}
+
+/** Leitura global restrita à administração; o retorno não mistura casos públicos com dados organizacionais. */
+export async function getPublicValidationOverview() {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  const [cases, sources, findings, requirements] = await Promise.all([
+    db.select().from(publicValidationCases).orderBy(publicValidationCases.title),
+    db.select().from(publicValidationSources).orderBy(publicValidationSources.identifier),
+    db.select().from(publicValidationFindings).orderBy(publicValidationFindings.conditionCode),
+    db.select().from(publicValidationRequirements).orderBy(publicValidationRequirements.code),
+  ]);
+  return { cases, sources, findings, requirements };
+}
+
+export async function reviewPublicValidationFinding(input: { findingId: number; reviewerUserId: number; reviewStatus: "aprovada" | "corrigida" | "rejeitada" | "solicitada_revisao"; reviewRationale: string }) {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  const result = await db.update(publicValidationFindings).set({ reviewStatus: input.reviewStatus, reviewRationale: input.reviewRationale, reviewedByUserId: input.reviewerUserId, reviewedAt: new Date() }).where(eq(publicValidationFindings.id, input.findingId));
+  if (result[0].affectedRows !== 1) throw new Error("O achado público de validação não foi encontrado.");
+  return (await db.select().from(publicValidationFindings).where(eq(publicValidationFindings.id, input.findingId)).limit(1))[0];
 }
 
 export function buildImportedOfficialSource(catalog: Pick<typeof officialSourceCatalog.$inferSelect, "title" | "issuer" | "sourceType" | "jurisdiction" | "authorityLevel" | "identifier" | "sourceVersionLabel" | "sourceUrl" | "publicationDate" | "effectiveFrom" | "effectiveTo">, input: { organizationId: number; importedByUserId: number }) {

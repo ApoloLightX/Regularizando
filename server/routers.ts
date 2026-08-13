@@ -38,6 +38,7 @@ import {
   getInviteByHash,
   getMemberOfOrganizationByEmail,
   getPilotRequests,
+  getPublicValidationOverview,
   getOfficialSourceImportForOrganization,
   importOfficialSourceToOrganization,
   getOrganizationForUser,
@@ -52,6 +53,7 @@ import {
   linkEvidenceToObligation,
   qualifyPilotRequest,
   resolveRequirementSourceConflict,
+  reviewPublicValidationFinding,
   reviewRequirementApplicability,
   revokeOrganizationInvite,
   updateOrganizationOnboarding,
@@ -104,6 +106,14 @@ export const appRouter = router({
         metadata: { previousStage: qualification.previousStage, qualificationStage: input.qualificationStage, origin: qualification.lead.leadOrigin },
       });
       return qualification.lead;
+    }),
+  }),
+  publicValidation: router({
+    overview: adminProcedure.query(() => getPublicValidationOverview()),
+    reviewFinding: adminProcedure.input(z.object({ findingId: z.number().int().positive(), reviewStatus: z.enum(["aprovada", "corrigida", "rejeitada", "solicitada_revisao"]), reviewRationale: z.string().trim().min(8).max(4000) })).mutation(async ({ ctx, input }) => {
+      const finding = await reviewPublicValidationFinding({ ...input, reviewerUserId: ctx.user.id });
+      await queueGovernanceEvent({ sourceEventKey: `public-validation:${finding.id}:review:${Date.now()}`, category: "data_governance", action: "PUBLIC_VALIDATION_FINDING_REVIEWED", entityType: "public_validation_finding", entityId: finding.id, actorUserId: ctx.user.id, metadata: { reviewStatus: input.reviewStatus, sourceId: finding.sourceId } });
+      return finding;
     }),
   }),
   dashboard: router({ overview: protectedProcedure.query(async ({ ctx }) => { const context = await getOrganizationForUser(ctx.user.id); return context ? { organization: context.organization, membership: context.membership, data: await getDashboardData(context.organization.id) } : { organization: null, data: null }; }) }),

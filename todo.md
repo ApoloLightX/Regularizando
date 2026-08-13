@@ -130,3 +130,14 @@
 - [x] Criar uma verificação reproduzível da réplica externa de eventos de governança com sanitização de metadados.
 - [x] Executar uma mutação real capturada pela aplicação e confirmar sua réplica minimizada no Supabase.
 - [x] Verificar de forma reproduzível que a mutação funcional replicada não envia PII nem segredos ao Supabase.
+- [x] Verificar integralmente as fontes públicas oficiais da LO IBAMA nº 1660/2022, da LO IBAMA nº 1668/2024 e do guia oficial de condicionantes.
+- [x] Separar no modelo e na interface os casos públicos de validação técnica das organizações e dos clientes privados.
+- [x] Implementar uma ingestão genérica, rastreável e sem regras específicas por número de licença para documentos públicos de validação.
+- [x] Estruturar somente condicionantes, prazos, frequências e trechos que estejam comprovados nas fontes públicas, mantendo campos ausentes como nulos ou pendentes de revisão técnica.
+- [x] Criar uma demonstração interna do fluxo fonte → condicionante → requisito → evidência esperada → revisão → decisão para o caso público, sem simular clientes, ativos ou evidências de cumprimento.
+- [x] Criar regressões permanentes contra perda de proveniência, extração de prazo/frequência, invenção de dados e vazamento dos casos públicos para organizações privadas.
+- [x] Corrigir a extração genérica de prazos mínimos e de prazos expressos como 'em N dias' nas licenças públicas de validação.
+- [x] Reduzir explicitamente o escopo para trechos selecionados verificados ou completar um registro verificável integral das duas licenças e do guia oficial.
+- [x] Modelar e exibir uma etapa explícita de requisito público entre o achado extraído e a revisão humana, sem criar obrigação de cliente.
+- [x] Adicionar regressões permanentes que preservem URL oficial, hash, locator/página, trecho original e método de extração dos casos públicos.
+- [x] Tornar determinística a busca do achado público por fonte e condicionante na semeadura de requisitos.

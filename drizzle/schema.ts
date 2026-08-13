@@ -331,6 +331,95 @@ export const organizationOfficialSourceImports = mysqlTable("organizationOfficia
   foreignKey({ columns: [table.confirmedByUserId], foreignColumns: [users.id], name: "organization_catalog_import_confirmer_fk" }).onDelete("set null"),
 ]);
 
+/** Casos públicos oficiais para QA e demonstração técnica; nunca pertencem a organizações ou clientes. */
+export const publicValidationCases = mysqlTable("publicValidationCases", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 120 }).notNull(),
+  title: varchar("title", { length: 260 }).notNull(),
+  purpose: text("purpose").notNull(),
+  classification: mysqlEnum("classification", ["caso_publico_validacao_tecnica"]).default("caso_publico_validacao_tecnica").notNull(),
+  status: mysqlEnum("status", ["ativo", "arquivado"]).default("ativo").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("public_validation_case_slug_unique").on(table.slug),
+  index("public_validation_case_status_idx").on(table.status),
+]);
+
+/** Documento oficial pertencente exclusivamente a um caso público de validação técnica. */
+export const publicValidationSources = mysqlTable("publicValidationSources", {
+  id: int("id").autoincrement().primaryKey(),
+  caseId: int("caseId").notNull(),
+  slug: varchar("slug", { length: 140 }).notNull(),
+  title: varchar("title", { length: 260 }).notNull(),
+  issuer: varchar("issuer", { length: 180 }).notNull(),
+  documentType: mysqlEnum("documentType", ["licenca_operacao", "orientacao_tecnica"]).notNull(),
+  identifier: varchar("identifier", { length: 180 }).notNull(),
+  jurisdiction: varchar("jurisdiction", { length: 140 }).notNull(),
+  sourceUrl: varchar("sourceUrl", { length: 700 }).notNull(),
+  sourceHash: varchar("sourceHash", { length: 128 }),
+  publicationDate: timestamp("publicationDate"),
+  effectiveFrom: timestamp("effectiveFrom"),
+  effectiveTo: timestamp("effectiveTo"),
+  extractionMethod: mysqlEnum("extractionMethod", ["texto_nativo", "ocr", "referencia_manual"]).notNull(),
+  sourceQualityStatus: mysqlEnum("sourceQualityStatus", ["verificada", "ocr_exige_conferencia_visual"]).default("verificada").notNull(),
+  importedAt: timestamp("importedAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("public_validation_source_slug_unique").on(table.slug),
+  uniqueIndex("public_validation_case_source_identifier_unique").on(table.caseId, table.identifier),
+  index("public_validation_source_case_idx").on(table.caseId, table.documentType),
+  foreignKey({ columns: [table.caseId], foreignColumns: [publicValidationCases.id], name: "public_validation_source_case_fk" }).onDelete("cascade"),
+]);
+
+/** Achados extraídos de fonte pública: não são obrigações de clientes e sempre aguardam revisão humana. */
+export const publicValidationFindings = mysqlTable("publicValidationFindings", {
+  id: int("id").autoincrement().primaryKey(),
+  sourceId: int("sourceId").notNull(),
+  conditionCode: varchar("conditionCode", { length: 96 }).notNull(),
+  sourceLocator: varchar("sourceLocator", { length: 220 }).notNull(),
+  sourceExcerpt: text("sourceExcerpt").notNull(),
+  structuredObligation: text("structuredObligation").notNull(),
+  dueText: varchar("dueText", { length: 240 }),
+  recurrenceLabel: varchar("recurrenceLabel", { length: 120 }),
+  expectedEvidenceDescription: text("expectedEvidenceDescription"),
+  evidenceBasis: mysqlEnum("evidenceBasis", ["expressa_na_fonte", "nao_identificada_na_fonte"]).default("nao_identificada_na_fonte").notNull(),
+  applicabilityStatus: mysqlEnum("applicabilityStatus", ["pendente_revisao_tecnica"]).default("pendente_revisao_tecnica").notNull(),
+  reviewStatus: mysqlEnum("reviewStatus", ["pendente_revisao_humana", "aprovada", "corrigida", "rejeitada", "solicitada_revisao"]).default("pendente_revisao_humana").notNull(),
+  extractionConfidence: mysqlEnum("extractionConfidence", ["texto_verificado", "ocr_exige_conferencia_visual"]).notNull(),
+  reviewRationale: text("reviewRationale"),
+  reviewedByUserId: int("reviewedByUserId"),
+  reviewedAt: timestamp("reviewedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("public_validation_finding_source_condition_unique").on(table.sourceId, table.conditionCode),
+  index("public_validation_finding_source_review_idx").on(table.sourceId, table.reviewStatus),
+  foreignKey({ columns: [table.sourceId], foreignColumns: [publicValidationSources.id], name: "public_validation_finding_source_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.reviewedByUserId], foreignColumns: [users.id], name: "public_validation_finding_reviewer_fk" }).onDelete("set null"),
+]);
+
+/** Requisito técnico derivado de achado público; não é obrigação e não pode ser associado a uma organização. */
+export const publicValidationRequirements = mysqlTable("publicValidationRequirements", {
+  id: int("id").autoincrement().primaryKey(),
+  findingId: int("findingId").notNull(),
+  code: varchar("code", { length: 140 }).notNull(),
+  title: varchar("title", { length: 260 }).notNull(),
+  applicabilityScope: text("applicabilityScope").notNull(),
+  applicabilityCriteria: text("applicabilityCriteria").notNull(),
+  expectedEvidenceDescription: text("expectedEvidenceDescription"),
+  applicabilityStatus: mysqlEnum("applicabilityStatus", ["pendente_revisao_tecnica"]).default("pendente_revisao_tecnica").notNull(),
+  status: mysqlEnum("status", ["rascunho", "em_revisao", "verificado", "arquivado"]).default("em_revisao").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("public_validation_requirement_finding_unique").on(table.findingId),
+  uniqueIndex("public_validation_requirement_code_unique").on(table.code),
+  index("public_validation_requirement_status_idx").on(table.status, table.applicabilityStatus),
+  foreignKey({ columns: [table.findingId], foreignColumns: [publicValidationFindings.id], name: "public_validation_requirement_finding_fk" }).onDelete("cascade"),
+]);
+
 /** Identidade estável de um requisito, sempre apoiada em uma fonte primária. */
 export const requirements = mysqlTable("requirements", {
   id: int("id").autoincrement().primaryKey(),
