@@ -114,7 +114,7 @@
 - [x] Mapear e reconciliar o estado do repositório remoto, do banco operacional e da integração Supabase antes de registrar novos eventos.
 - [x] Definir e documentar uma trilha de rastreabilidade para alterações de site, autenticação, segurança, leads e governança, sem registrar segredos ou dados pessoais além do necessário.
 - [x] Implementar registros auditáveis de governança no banco para eventos relevantes do produto e criar cobertura automatizada.
-- [ ] Sincronizar as alterações versionadas do projeto com o repositório GitHub e validar a persistência no Supabase.
+- [x] Sincronizar as alterações versionadas do projeto com o repositório GitHub e validar a persistência no Supabase.
 - [x] Documentar controles implementados, limites e pendências de cibersegurança, banco de dados, autenticação, continuidade e resposta a incidentes, sem alegar certificações não obtidas.
 - [x] Documentar a minimização de dados e registrar a captura consentida de solicitações de piloto na trilha de governança.
 - [x] Modelar origem do lead, estágio de qualificação e responsável por qualificação sem expor dados pessoais na réplica externa.
@@ -122,6 +122,11 @@
 - [x] Registrar eventos específicos do ciclo de vida do lead — captura, qualificação e mudança de estágio — na trilha de auditoria.
 - [x] Preservar o estágio anterior real do lead em cada mudança de qualificação registrada na auditoria.
 - [x] Cobrir em teste a transição de qualificação após a primeira mudança de estágio do lead.
-- [ ] Registrar no Supabase a matriz de governança e os eventos técnicos relevantes, preservando a separação entre metadados de auditoria e dados pessoais sensíveis.
-- [ ] Implementar primeiro a replicação automática resiliente, com fila de recuperação para eventos relevantes que não possam ser enviados ao Supabase imediatamente.
-- [ ] Implementar depois consolidações por checkpoint, publicação e revisão de segurança para leitura executiva da trilha de auditoria.
+- [x] Registrar no Supabase a matriz de governança e os eventos técnicos relevantes, preservando a separação entre metadados de auditoria e dados pessoais sensíveis.
+- [x] Implementar primeiro a replicação automática resiliente, com fila de recuperação para eventos relevantes que não possam ser enviados ao Supabase imediatamente.
+- [x] Implementar depois consolidações por checkpoint, publicação e revisão de segurança para leitura executiva da trilha de auditoria.
+- [x] Persistir um evento funcional real da aplicação no Supabase e confirmar a ausência de PII e segredos em seus metadados.
+- [x] Registrar a matriz de governança em forma estruturada e consultável no Supabase, além da documentação do repositório.
+- [x] Criar uma verificação reproduzível da réplica externa de eventos de governança com sanitização de metadados.
+- [x] Executar uma mutação real capturada pela aplicação e confirmar sua réplica minimizada no Supabase.
+- [x] Verificar de forma reproduzível que a mutação funcional replicada não envia PII nem segredos ao Supabase.
