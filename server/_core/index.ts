@@ -8,6 +8,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { runGovernanceSyncSchedule } from "../governance-scheduled";
 
 const apiWindows = new Map<string, { count: number; resetAt: number }>();
 function apiRateLimit(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -48,6 +49,7 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  app.post("/api/scheduled/governance-sync", runGovernanceSyncSchedule);
   // tRPC API
   app.use(
     "/api/trpc",

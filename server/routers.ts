@@ -5,7 +5,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   acceptOrganizationInvite,
   activateSectorProfile,
@@ -37,6 +37,7 @@ import {
   getEvidenceForOrganization,
   getInviteByHash,
   getMemberOfOrganizationByEmail,
+  getPilotRequests,
   getOfficialSourceImportForOrganization,
   importOfficialSourceToOrganization,
   getOrganizationForUser,
@@ -49,6 +50,7 @@ import {
   getTeamOverview,
   hasPendingSourceConflict,
   linkEvidenceToObligation,
+  qualifyPilotRequest,
   resolveRequirementSourceConflict,
   reviewRequirementApplicability,
   revokeOrganizationInvite,
@@ -57,6 +59,7 @@ import {
   verifyRequirementVersion,
   type OwnedEntityType,
 } from "./db";
+import { queueGovernanceEvent } from "./governance-sync";
 import { storageGetSignedUrl, storagePut } from "./storage";
 import { canManageTeam, canReviewEvidence, normalizeInvitationEmail, requireWorkspaceContext } from "./regularizando.policy";
 import { makeOrganizationSlug, safeEvidenceName, validateEvidenceUpload } from "./regularizando.validation";
@@ -85,6 +88,22 @@ export const appRouter = router({
     request: publicProcedure.input(z.object({ name: z.string().trim().min(2).max(160), email: z.string().trim().email().max(320), company: z.string().trim().min(2).max(180), role: z.string().trim().max(120).optional(), sector: z.enum(["telecom", "infraestrutura", "industria", "consultoria", "outro"]), portfolioSize: z.string().trim().max(80).optional(), challenge: z.string().trim().min(10).max(2000).optional(), consent: z.literal(true) })).mutation(async ({ input }) => {
       const id = await createPilotRequest({ name: input.name, email: input.email.toLowerCase(), company: input.company, role: input.role || null, sector: input.sector, portfolioSize: input.portfolioSize || null, challenge: input.challenge || null, consentedAt: new Date() });
       return { id, success: true } as const;
+    }),
+  }),
+  leads: router({
+    list: adminProcedure.query(() => getPilotRequests()),
+    qualify: adminProcedure.input(z.object({ pilotRequestId: z.number().int().positive(), qualificationStage: z.enum(["mql", "sql", "disqualified", "converted"]), qualificationNote: z.string().trim().max(500).optional() })).mutation(async ({ ctx, input }) => {
+      const qualification = await qualifyPilotRequest({ ...input, qualifiedByUserId: ctx.user.id, qualificationNote: input.qualificationNote ?? null });
+      await queueGovernanceEvent({
+        sourceEventKey: `lead:${qualification.lead.id}:stage:${input.qualificationStage}:${Date.now()}`,
+        category: "lead",
+        action: "LEAD_QUALIFICATION_CHANGED",
+        entityType: "pilot_request",
+        entityId: qualification.lead.id,
+        actorUserId: ctx.user.id,
+        metadata: { previousStage: qualification.previousStage, qualificationStage: input.qualificationStage, origin: qualification.lead.leadOrigin },
+      });
+      return qualification.lead;
     }),
   }),
   dashboard: router({ overview: protectedProcedure.query(async ({ ctx }) => { const context = await getOrganizationForUser(ctx.user.id); return context ? { organization: context.organization, membership: context.membership, data: await getDashboardData(context.organization.id) } : { organization: null, data: null }; }) }),

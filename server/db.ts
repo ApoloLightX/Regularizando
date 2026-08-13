@@ -76,6 +76,29 @@ export async function createPilotRequest(input: typeof pilotRequests.$inferInser
   return Number(result[0].insertId);
 }
 
+export async function getPilotRequests() {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  return db.select().from(pilotRequests).orderBy(desc(pilotRequests.createdAt));
+}
+
+export async function qualifyPilotRequest(input: {
+  pilotRequestId: number;
+  qualificationStage: "mql" | "sql" | "disqualified" | "converted";
+  qualifiedByUserId: number;
+  qualificationNote?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const previous = (await db.select().from(pilotRequests).where(eq(pilotRequests.id, input.pilotRequestId)).limit(1))[0];
+  if (!previous) throw new Error("A solicitação de piloto não foi encontrada.");
+  const result = await db.update(pilotRequests).set({ qualificationStage: input.qualificationStage, qualifiedByUserId: input.qualifiedByUserId, qualifiedAt: new Date(), qualificationNote: input.qualificationNote ?? null }).where(eq(pilotRequests.id, input.pilotRequestId));
+  if (result[0].affectedRows !== 1) throw new Error("A solicitação de piloto não foi encontrada.");
+  const lead = (await db.select().from(pilotRequests).where(eq(pilotRequests.id, input.pilotRequestId)).limit(1))[0];
+  if (!lead) throw new Error("A solicitação de piloto não foi encontrada após a atualização.");
+  return { lead, previousStage: previous.qualificationStage };
+}
+
 export async function getDashboardData(organizationId: number) {
   const db = await getDb();
   if (!db) throw new Error("Banco de dados indisponível");

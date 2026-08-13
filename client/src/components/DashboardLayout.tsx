@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { BookOpenCheck, ClipboardCheck, FileUp, LayoutDashboard, LogOut, PanelLeft, Route, TowerControl, UsersRound } from "lucide-react";
+import { BookOpenCheck, ClipboardCheck, ContactRound, FileUp, LayoutDashboard, LogOut, PanelLeft, Route, TowerControl, UsersRound } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -34,6 +34,7 @@ const menuItems = [
   { icon: BookOpenCheck, label: "Fontes e requisitos", path: "/fontes" },
   { icon: FileUp, label: "Evidências", path: "/evidencias" },
   { icon: UsersRound, label: "Equipe", path: "/equipe" },
+  { icon: ContactRound, label: "Leads", path: "/leads" },
   { icon: Route, label: "Casos de uso", path: "/casos-de-uso" },
   { icon: TowerControl, label: "Piloto telecom", path: "/piloto-telecom" },
 ];

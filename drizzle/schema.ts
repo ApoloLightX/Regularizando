@@ -513,6 +513,63 @@ export const auditEvents = mysqlTable("auditEvents", {
   foreignKey({ columns: [table.actorUserId], foreignColumns: [users.id], name: "audit_actor_user_fk" }).onDelete("set null"),
 ]);
 
+/** Evento de governança com conteúdo imutável e estado de entrega separado para réplica externa segura. */
+export const governanceSyncEvents = mysqlTable("governanceSyncEvents", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: varchar("eventId", { length: 64 }).notNull().unique(),
+  sourceEventKey: varchar("sourceEventKey", { length: 128 }).notNull().unique(),
+  category: mysqlEnum("category", ["site", "authentication", "cybersecurity", "lead", "data_governance", "release", "integration", "operational"]).notNull(),
+  action: varchar("action", { length: 120 }).notNull(),
+  entityType: varchar("entityType", { length: 96 }).notNull(),
+  entityId: varchar("entityId", { length: 96 }),
+  organizationId: int("organizationId"),
+  actorUserId: int("actorUserId"),
+  metadata: text("metadata"),
+  occurredAt: timestamp("occurredAt").notNull(),
+  syncStatus: mysqlEnum("syncStatus", ["pending", "synced", "failed"]).default("pending").notNull(),
+  syncAttempts: int("syncAttempts").default(0).notNull(),
+  nextAttemptAt: timestamp("nextAttemptAt"),
+  lastErrorCode: varchar("lastErrorCode", { length: 120 }),
+  syncedAt: timestamp("syncedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  index("governance_sync_pending_idx").on(table.syncStatus, table.nextAttemptAt),
+  index("governance_sync_occurred_idx").on(table.occurredAt),
+  index("governance_sync_category_idx").on(table.category, table.action),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "governance_sync_organization_fk" }).onDelete("set null"),
+  foreignKey({ columns: [table.actorUserId], foreignColumns: [users.id], name: "governance_sync_actor_fk" }).onDelete("set null"),
+]);
+
+/** Consolidação de mudanças por checkpoint, publicação ou revisão de governança. */
+export const governanceMilestones = mysqlTable("governanceMilestones", {
+  id: int("id").autoincrement().primaryKey(),
+  milestoneId: varchar("milestoneId", { length: 64 }).notNull().unique(),
+  milestoneKey: varchar("milestoneKey", { length: 128 }).notNull().unique(),
+  milestoneType: mysqlEnum("milestoneType", ["checkpoint", "publication", "security_review", "schema_change", "operational_review"]).notNull(),
+  sourceReference: varchar("sourceReference", { length: 180 }).notNull(),
+  summary: text("summary").notNull(),
+  scope: text("scope"),
+  occurredAt: timestamp("occurredAt").notNull(),
+  syncStatus: mysqlEnum("syncStatus", ["pending", "synced", "failed"]).default("pending").notNull(),
+  syncAttempts: int("syncAttempts").default(0).notNull(),
+  nextAttemptAt: timestamp("nextAttemptAt"),
+  lastErrorCode: varchar("lastErrorCode", { length: 120 }),
+  syncedAt: timestamp("syncedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  index("governance_milestone_pending_idx").on(table.syncStatus, table.nextAttemptAt),
+  index("governance_milestone_occurred_idx").on(table.occurredAt),
+]);
+
+/** Controle durável do job de recuperação de réplicas externas. */
+export const governanceSyncControls = mysqlTable("governanceSyncControls", {
+  id: int("id").autoincrement().primaryKey(),
+  controlKey: varchar("controlKey", { length: 96 }).notNull().unique(),
+  scheduleCronTaskUid: varchar("scheduleCronTaskUid", { length: 65 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 /** Solicitações comerciais públicas: não contém documentos nem dados operacionais do cliente. */
 export const pilotRequests = mysqlTable("pilotRequests", {
   id: int("id").autoincrement().primaryKey(),
@@ -521,11 +578,21 @@ export const pilotRequests = mysqlTable("pilotRequests", {
   company: varchar("company", { length: 180 }).notNull(),
   role: varchar("role", { length: 120 }),
   sector: mysqlEnum("sector", ["telecom", "infraestrutura", "industria", "consultoria", "outro"]).notNull(),
+  leadOrigin: mysqlEnum("leadOrigin", ["website", "referral", "event", "partner", "outbound", "other"]).default("website").notNull(),
+  qualificationStage: mysqlEnum("qualificationStage", ["captured", "mql", "sql", "disqualified", "converted"]).default("captured").notNull(),
+  qualifiedByUserId: int("qualifiedByUserId"),
+  qualifiedAt: timestamp("qualifiedAt"),
+  qualificationNote: varchar("qualificationNote", { length: 500 }),
   portfolioSize: varchar("portfolioSize", { length: 80 }),
   challenge: text("challenge"),
   consentedAt: timestamp("consentedAt").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, (table) => [index("pilot_request_created_idx").on(table.createdAt), index("pilot_request_email_idx").on(table.email)]);
+}, (table) => [
+  index("pilot_request_created_idx").on(table.createdAt),
+  index("pilot_request_email_idx").on(table.email),
+  index("pilot_request_stage_idx").on(table.qualificationStage, table.createdAt),
+  foreignKey({ columns: [table.qualifiedByUserId], foreignColumns: [users.id], name: "pilot_request_qualifier_fk" }).onDelete("set null"),
+]);
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
