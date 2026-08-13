@@ -37,6 +37,12 @@ O fluxo é **evento confirmado → fila local → tentativa imediata → Supabas
 | Resposta a incidentes | Baseline operacional para conter, preservar evidências, avaliar impacto, corrigir e comunicar quando aplicável. | Pentest periódico, SOC 2, ISO 27001, monitoramento contínuo e treinamento anti-phishing não são certificações ou controles comprovados nesta entrega. |
 | Leads e CRM | Consentimento de solicitação de piloto, minimização de dados na réplica e registro do evento de captação. | Pipeline comercial MQL/SQL, nutrição, CRM externo, scoring e automações de marketing ainda precisam de um escopo próprio. |
 
+## Verificação do Supabase
+
+Após a criação do livro-razão, a verificação de segurança deixou de apontar as duas tabelas de governança por ausência de política ou a função de imutabilidade por `search_path` mutável. As tabelas permanecem com RLS e uma política explícita de negação para clientes diretos; a escrita ocorre somente pelo serviço de servidor com chave `service_role`.
+
+Permanece um alerta externo para a função legada `public.accept_organization_invitation(text)`, que é `SECURITY DEFINER` e executável por usuários autenticados. A função foi apenas **inspecionada**, não alterada nesta entrega: ela exige identidade autenticada, confere o e-mail do convite, compara token hasheado e bloqueia a linha durante o aceite. Como sua alteração pode interromper um fluxo externo já existente, qualquer revogação ou mudança de modo deve passar por uma revisão específica de dependências e testes do fluxo de convite.
+
 ## Consolidações por marco
 
 Além dos eventos de aplicação, os marcos abaixo entram no mesmo fluxo de réplica:
