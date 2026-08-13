@@ -213,6 +213,19 @@
   .module-detail__copy li { display: flex; align-items: center; gap: 9px; color: rgba(251,250,245,.8); font-size: 10px; font-weight: 600; }
   .module-detail__copy li svg { color: var(--mint); }
   .arrow-link--light { color: var(--mint); margin-top: 30px; }
+  .operational-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 1200px; margin: 0 auto; padding: 0; border-top: 1px solid rgba(198,232,215,.2); list-style: none; }
+  .operational-flow__step { display: flex; flex-direction: column; min-height: 330px; padding: 26px 24px 23px; border-right: 1px solid rgba(198,232,215,.2); border-bottom: 1px solid rgba(198,232,215,.2); }
+  .operational-flow__step:first-child { border-left: 1px solid rgba(198,232,215,.2); }
+  .operational-flow__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--mint); }
+  .operational-flow__top span { font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+  .operational-flow__top p { margin: 0; font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .operational-flow__step h3 { margin: 38px 0 15px; font-family: 'DM Serif Display', serif; font-size: clamp(26px, 2.5vw, 35px); font-weight: 400; line-height: 1.02; }
+  .operational-flow__step > p { margin: 0; color: rgba(198,232,215,.7); font-size: 12px; line-height: 1.72; }
+  .operational-flow__result { display: grid; gap: 7px; margin-top: auto; padding-top: 22px; border-top: 1px solid rgba(198,232,215,.16); }
+  .operational-flow__result strong { color: var(--mint); font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .operational-flow__result span { color: rgba(251,250,245,.9); font-size: 10px; font-weight: 700; line-height: 1.5; }
+  .operational-flow__closing { display: flex; align-items: flex-end; justify-content: space-between; gap: 42px; max-width: 1200px; margin: 0 auto; padding-top: 30px; }
+  .operational-flow__closing p { max-width: 720px; margin: 0; color: rgba(198,232,215,.68); font-size: 12px; line-height: 1.7; }.operational-flow__closing strong { color: var(--white); }
   .territory-section { display: grid; grid-template-columns: 1.08fr .92fr; gap: clamp(70px, 10vw, 150px); align-items: center; }
   .territory-visual { position: relative; min-height: 485px; overflow: hidden; background: var(--ink); }
   .territory-visual--guided { display: grid; align-items: center; padding: 34px; background-image: repeating-linear-gradient(30deg, rgba(198,232,215,.07) 0 1px, transparent 1px 28px), linear-gradient(145deg, #092d30, #164f49 70%, #8f7a5f); }
@@ -317,8 +330,11 @@
     .modules-section { padding: 68px 24px; }
     .section-heading { align-items: flex-start; flex-direction: column; gap: 22px; margin-bottom: 45px; }
     .heading-note { text-align: left; }
-    .module-detail { grid-template-columns: 1fr; gap: 29px; }
-    .module-detail__visual { height: 235px; }
+    .operational-flow { grid-template-columns: 1fr; }
+    .operational-flow__step { min-height: 0; padding: 22px 18px; border-left: 1px solid rgba(198,232,215,.2); }
+    .operational-flow__step h3 { margin-top: 25px; }
+    .operational-flow__result { margin-top: 22px; }
+    .operational-flow__closing { align-items: flex-start; flex-direction: column; gap: 18px; padding-top: 24px; }
     .territory-visual { min-height: 0; }.territory-visual--guided { padding: 18px; }.territory-guide { padding: 18px; }
     .gis-layer-list { top: 62px; left: 14px; gap: 5px; padding: 9px; font-size: 7px; }
     .gis-site { left: 40%; }

@@ -8,58 +8,22 @@ import {
   Check,
   CircleAlert,
   FileCheck2,
-  Globe2,
-  Leaf,
   Menu,
   MessageSquareText,
   Radar,
-  ShieldCheck,
   Sparkles,
   X,
 } from "lucide-react";
 
 const logoUrl = "/manus-storage/regularizando-mark_ccce30b2.png";
 const heroUrl = "/manus-storage/regularizando-topographic-hero_03f09fb6.png";
-const ehsUrl = "/manus-storage/regularizando-ehs-field_bce54276.png";
-const esgUrl = "/manus-storage/regularizando-esg-evidence_9448fc14.png";
-const gisUrl = "/manus-storage/regularizando-gis-territory_639b4fd3.png";
 
-type ModuleKey = "radar" | "ehs" | "esg" | "territory";
-
-const modules: Record<ModuleKey, { eyebrow: string; title: string; body: string; image: string; points: string[]; icon: typeof Radar }> = {
-  radar: {
-    eyebrow: "01 / Núcleo: Licenciamento & Obrigações",
-    title: "Transforme cada obrigação em uma rotina que a equipe consegue comprovar.",
-    body: "Organize licenças, condicionantes, documentos, prazos e responsáveis por ativo. A equipe enxerga o que falta e decide com a fonte à vista.",
-    image: gisUrl,
-    points: ["Licenças, condicionantes e requisitos", "Prazos, pendências e responsáveis", "Evidência e revisão antes da decisão"],
-    icon: FileCheck2,
-  },
-  ehs: {
-    eyebrow: "02 / Módulo: Operação & não conformidades",
-    title: "Leve do desvio em campo ao plano de ação verificável.",
-    body: "Inspeções, incidentes e não conformidades passam a uma rotina de responsável, prazo, evidência e verificação de eficácia.",
-    image: ehsUrl,
-    points: ["Inspeções com fotos e localização", "Planos de ação e responsáveis por prazo", "Desvio, evidência e verificação de eficácia"],
-    icon: ShieldCheck,
-  },
-  esg: {
-    eyebrow: "03 / Módulo: Indicadores ambientais & ESG",
-    title: "Reporte o impacto sem perder a origem do dado.",
-    body: "Métricas ambientais, fontes, períodos, unidades e responsáveis conectados a documentos e revisão: uma base rastreável para reporte.",
-    image: esgUrl,
-    points: ["Catálogo de métricas e unidades", "Escopos, fontes e metodologia", "Evidências prontas para revisão"],
-    icon: Leaf,
-  },
-  territory: {
-    eyebrow: "04 / Módulo: Território / GIS",
-    title: "Entenda o local antes de decidir o próximo passo.",
-    body: "Não é um mapa pronto nem uma conclusão automática. O módulo começa quando o ativo tem localização e fontes geográficas reais vinculadas para revisão técnica.",
-    image: gisUrl,
-    points: ["Entrada: endereço ou coordenadas do ativo", "Cruzamento: camadas oficiais com fonte e data", "Saída: sinal para revisão, nunca decisão automática"],
-    icon: Globe2,
-  },
-};
+const operationalFlow = [
+  { number: "01", label: "Organizar", title: "Reúna o que já existe.", body: "Licenças, condicionantes, laudos e documentos deixam de ficar espalhados por pasta, região ou fornecedor.", result: "Uma fonte de verdade por ativo e processo." },
+  { number: "02", label: "Priorizar", title: "Veja o que pede ação agora.", body: "Prazos, pendências e não conformidades aparecem ligados ao responsável, ao ativo e à origem do requisito.", result: "Uma fila objetiva para a equipe decidir primeiro." },
+  { number: "03", label: "Comprovar", title: "Feche a rotina com evidência.", body: "A equipe conecta arquivo, registro de campo ou dado operacional àquilo que precisa ser comprovado antes de encerrar.", result: "Revisão humana e histórico antes de chamar algo de concluído." },
+  { number: "04", label: "Ampliar", title: "Traga mais contexto quando ele ajudar.", body: "Operação, indicadores ESG e território entram quando há dados reais para aprofundar a mesma decisão, não como telas isoladas.", result: "A mesma rotina ganha recortes sem perder a origem." },
+];
 
 const evidenceRows = [
   { label: "Licença de Operação", meta: "Vence em 42 dias", tone: "warn", icon: CircleAlert },
@@ -83,16 +47,8 @@ export default function Home() {
     const pendingInvite = sessionStorage.getItem("regularizando-pending-invite");
     if (pendingInvite) setLocation(`/convites/${pendingInvite}`);
   }, [setLocation]);
-  const [activeModule, setActiveModule] = useState<ModuleKey>("radar");
   const [menuOpen, setMenuOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
-  const active = modules[activeModule];
-  const ActiveIcon = active.icon;
-
-  const selectModule = (key: ModuleKey) => {
-    setActiveModule(key);
-    setMenuOpen(false);
-  };
 
   return (
     <div className="site-shell" id="top">
@@ -178,20 +134,11 @@ export default function Home() {
         <section className="home-use-cases" aria-labelledby="home-cases-title"><div><p className="eyebrow">Cenários que orientam o produto</p><h2 id="home-cases-title">O mesmo sistema, aplicado a problemas que custam tempo e confiança.</h2></div><div className="home-use-cases__grid"><article><span>01</span><h3>Sites distribuídos</h3><p>Carteira de licenças, condicionantes e evidências amarrada ao código de cada ativo.</p><Link href="/casos-de-uso">Ver caso telecom <ArrowRight size={15} /></Link></article><article><span>02</span><h3>Obras e infraestrutura</h3><p>Inspeções, condicionantes e planos de ação conectados da frente de obra à renovação.</p><Link href="/casos-de-uso">Ver caso de obra <ArrowRight size={15} /></Link></article><article><span>03</span><h3>Indicadores ambientais & ESG</h3><p>Cada indicador preserva período, unidade, fonte, meta e status de revisão.</p><Link href="/casos-de-uso">Ver caso de indicadores <ArrowRight size={15} /></Link></article></div><Link className="arrow-link" href="/casos-de-uso">Explorar todos os casos de uso <ArrowRight size={16} /></Link></section>
 
         <section className="modules-section" id="modulos" aria-labelledby="modules-title">
-          <div className="section-heading"><div><p className="eyebrow eyebrow--light">Um núcleo que conecta módulos</p><h2 id="modules-title">Comece pelo licenciamento.<br />Expanda quando fizer sentido.</h2></div><span className="heading-note">O núcleo organiza obrigações.<br />Os módulos aprofundam a rotina.</span></div>
-          <div className="modules-layout">
-            <div className="module-tabs" role="tablist" aria-label="Módulos Regularizando">
-              {(Object.keys(modules) as ModuleKey[]).map((key) => {
-                const item = modules[key];
-                const Icon = item.icon;
-                return <button className={`module-tab ${activeModule === key ? "module-tab--active" : ""}`} type="button" role="tab" aria-selected={activeModule === key} key={key} onClick={() => selectModule(key)}><span className="module-tab__index">{item.eyebrow.slice(0, 2)}</span><span className="module-tab__copy"><strong>{item.eyebrow.slice(5)}</strong><small>{key === "radar" ? "Requisitos e licenças" : key === "ehs" ? "Campo e operação" : key === "esg" ? "Métricas e disclosure" : "Localização e fontes reais"}</small></span><Icon size={19} /></button>;
-              })}
-            </div>
-            <div className="module-detail" key={activeModule}>
-              <div className={`module-detail__visual module-detail__visual--${activeModule}`}>{activeModule === "territory" ? <div className="territory-module-explainer"><span>1. Local do ativo</span><ArrowRight size={16} /><span>2. Camadas oficiais</span><ArrowRight size={16} /><span>3. Revisão técnica</span></div> : <div className="visual-media" role="img" aria-label={`Visual do módulo ${active.eyebrow.slice(5)}`} />}<div className="visual-tag"><ActiveIcon size={14} /> {activeModule === "territory" ? "Dados reais necessários" : "Camada ativa"}</div></div>
-              <div className="module-detail__copy"><p className="eyebrow eyebrow--light">{active.eyebrow}</p><h3>{active.title}</h3><p>{active.body}</p><ul>{active.points.map((point) => <li key={point}><Check size={15} /> {point}</li>)}</ul><button className="arrow-link arrow-link--light" type="button" onClick={() => setLocation("/dashboard")}>Ver esta camada em ação <ArrowRight size={16} /></button></div>
-            </div>
-          </div>
+          <div className="section-heading"><div><p className="eyebrow eyebrow--light">Uma rotina, sem partes desconectadas</p><h2 id="modules-title">Do documento recebido à decisão que você consegue explicar.</h2></div><span className="heading-note">Não são quatro produtos para administrar.<br />É uma rotina única, com mais contexto quando necessário.</span></div>
+          <ol className="operational-flow" aria-label="Como o Regularizando organiza a rotina ambiental">
+            {operationalFlow.map((step) => <li className="operational-flow__step" key={step.number}><div className="operational-flow__top"><span>{step.number}</span><p>{step.label}</p></div><h3>{step.title}</h3><p>{step.body}</p><div className="operational-flow__result"><strong>Resultado</strong><span>{step.result}</span></div></li>)}
+          </ol>
+          <div className="operational-flow__closing"><p><strong>Licenciamento é o ponto de partida</strong> porque é onde prazo, condição e documento se encontram. Operação, ESG e território só entram para ajudar a resolver a mesma rotina — com dados reais e revisão humana.</p><Link className="arrow-link arrow-link--light" href="/produto">Ver o fluxo verificável <ArrowRight size={16} /></Link></div>
         </section>
 
         <section className="territory-section" id="territorio" aria-labelledby="territory-title">

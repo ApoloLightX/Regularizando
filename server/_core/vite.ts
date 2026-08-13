@@ -51,6 +51,11 @@ export async function setupVite(app: Express, server: Server) {
     server: { middlewareMode: true, hmr: { server }, allowedHosts: true },
     appType: "custom",
   });
+  app.use((req, res, next) => {
+    if (req.path === "/index.html") return res.redirect(301, "/");
+    if (req.path !== "/" && /\/+$/ .test(req.path)) return res.redirect(301, req.path.replace(/\/+$/ , "") || "/");
+    next();
+  });
   app.use(vite.middlewares);
   app.use("*", async (req, res, next) => {
     try {

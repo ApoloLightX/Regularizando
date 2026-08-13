@@ -23,11 +23,17 @@ describe("marketing positioning", () => {
     expect(home).not.toContain("Confiança</dt><dd>94%");
   });
 
-  it("keeps CAPA as secondary terminology and presents GIS as a real-data workflow, not a map claim", () => {
+  it("keeps CAPA as secondary terminology, presents GIS as a real-data workflow and exposes the full operating flow without JavaScript", () => {
     const home = source("client/src/pages/Home.tsx");
     const useCases = source("client/src/pages/UseCases.tsx");
     const styles = source("client/src/index.css");
-    expect(home).toContain("Módulo: Operação & não conformidades");
+    expect(home).toContain("Uma rotina, sem partes desconectadas");
+    expect(home).toContain("Do documento recebido à decisão que você consegue explicar.");
+    expect(home).toContain("Reúna o que já existe.");
+    expect(home).toContain("Veja o que pede ação agora.");
+    expect(home).toContain("Feche a rotina com evidência.");
+    expect(home).toContain("Traga mais contexto quando ele ajudar.");
+    expect(home).toContain("operational-flow__step");
     expect(home).toContain("Demonstração conceitual");
     expect(home).toContain("Atualização: 12/08/2026");
     expect(home).toContain("Sem localização e fonte vinculadas, nenhuma camada, alerta ou sobreposição é exibida.");

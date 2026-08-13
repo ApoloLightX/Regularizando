@@ -107,3 +107,7 @@
 - [x] Testar a preservação de URL, jurisdição, hierarquia e vigência quando uma fonte oficial é importada para a organização.
 - [x] Testar o isolamento de dados de uma importação oficial contra leitura ou reutilização por outra organização.
 - [x] Comprovar em regressão que uma importação oficial criada pela organização A não pode ser reutilizada pela organização B.
+- [x] Verificar e reforçar o HTML pré-renderizado das rotas públicas para leitores que não executam JavaScript.
+- [x] Garantir títulos, descrições, links e conteúdo útil no HTML inicial, sem depender de hidratação do cliente.
+- [x] Substituir a seção "Um núcleo que conecta módulos" por uma narrativa orientada a problemas, fluxos e resultados operacionais.
+- [x] Validar a nova comunicação em viewport móvel e por extração de HTML sem JavaScript.
