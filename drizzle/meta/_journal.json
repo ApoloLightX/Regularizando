@@ -64,6 +64,20 @@
       "when": 1786574462501,
       "tag": "0008_violet_starhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1786587177027,
+      "tag": "0009_bouncy_deadpool",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1786587323342,
+      "tag": "0010_tricky_william_stryker",
+      "breakpoints": true
     }
   ]
 }

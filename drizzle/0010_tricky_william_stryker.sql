@@ -1,0 +1,1 @@
+ALTER TABLE `officialSourceCatalog` ADD `publicationDate` timestamp;

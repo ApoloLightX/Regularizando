@@ -33,6 +33,8 @@ const db = vi.hoisted(() => ({
   getEvidenceForOrganization: vi.fn(),
   getInviteByHash: vi.fn(),
   getMemberOfOrganizationByEmail: vi.fn(),
+  getOfficialSourceImportForOrganization: vi.fn(),
+  importOfficialSourceToOrganization: vi.fn(),
   getOrganizationForUser: vi.fn(),
   getObligationOverview: vi.fn(),
   getRequirementApplicationContext: vi.fn(),
@@ -216,6 +218,39 @@ describe("team and assignment procedures", () => {
     db.getOrganizationForUser.mockResolvedValue(workspace("analyst"));
     db.createObligationInstance.mockRejectedValue(new Error("Somente versões verificadas podem gerar uma obrigação."));
     await expect(caller.obligations.applyRequirement({ requirementVersionId: 305, scopeJustification: "Escopo aplicável à estação e à operação distribuída.", scopeConfirmed: true })).rejects.toThrow("versões verificadas");
+  });
+
+  it("importa fonte oficial somente com gestor, confirmação de escopo e sem criar obrigação", async () => {
+    const analyst = appRouter.createCaller(context("analyst"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("analyst"));
+    await expect(analyst.obligations.importOfficialSource({ catalogSourceId: 8, scopeConfirmation: "Fonte será revisada para o ativo e processo ambiental informados." })).rejects.toMatchObject({ code: "FORBIDDEN" });
+
+    const owner = appRouter.createCaller(context("owner"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("owner"));
+    db.importOfficialSourceToOrganization.mockResolvedValue({ importId: 22, requirementSourceId: 44, catalog: { id: 8, identifier: "Lei Federal nº 15.190/2025" } });
+    await expect(owner.obligations.importOfficialSource({ catalogSourceId: 8, scopeConfirmation: "Fonte será revisada para o ativo e processo ambiental informados." })).resolves.toEqual({ importId: 22, requirementSourceId: 44, status: "em_revisao" });
+    expect(db.importOfficialSourceToOrganization).toHaveBeenCalledWith(expect.objectContaining({ catalogSourceId: 8, organizationId: 7, importedByUserId: 11 }));
+    expect(db.createObligationInstance).not.toHaveBeenCalled();
+    expect(db.createAuditEvent).toHaveBeenCalledWith(expect.objectContaining({ action: "OFFICIAL_SOURCE_IMPORTED", organizationId: 7 }));
+  });
+
+  it("sempre envia a importação oficial para a organização ativa, sem reutilizar escopo de outro tenant", async () => {
+    const caller = appRouter.createCaller(context("owner"));
+    const secondOrganization = { ...organization, id: 8, slug: "operacao-ehs-2" };
+    db.getOrganizationForUser.mockResolvedValue({ organization: secondOrganization, membership: { id: 4, organizationId: 8, userId: 11, role: "owner", createdAt: new Date() } });
+    db.importOfficialSourceToOrganization.mockResolvedValue({ importId: 23, requirementSourceId: 45, catalog: { id: 8, identifier: "Lei Federal nº 15.190/2025", jurisdiction: "Federal", authorityLevel: "federal", sourceUrl: "https://www.planalto.gov.br" } });
+    await caller.obligations.importOfficialSource({ catalogSourceId: 8, scopeConfirmation: "A fonte será revisada somente para o ativo associado à segunda organização." });
+    expect(db.importOfficialSourceToOrganization).toHaveBeenCalledWith(expect.objectContaining({ organizationId: 8, catalogSourceId: 8 }));
+    expect(db.createAuditEvent).toHaveBeenCalledWith(expect.objectContaining({ organizationId: 8, action: "OFFICIAL_SOURCE_IMPORTED" }));
+    expect(db.createObligationInstance).not.toHaveBeenCalled();
+  });
+
+  it("nega a leitura de uma importação oficial quando ela não pertence à organização ativa", async () => {
+    const caller = appRouter.createCaller(context("owner"));
+    db.getOrganizationForUser.mockResolvedValue(workspace("owner"));
+    db.getOfficialSourceImportForOrganization.mockRejectedValue(new Error("A importação de fonte não pertence à organização atual."));
+    await expect(caller.obligations.getOfficialSourceImport({ importId: 24 })).rejects.toThrow("não pertence à organização atual");
+    expect(db.getOfficialSourceImportForOrganization).toHaveBeenCalledWith(24, 7);
   });
 
   it("rejeita diretamente aplicação e decisão quando a fonte é incompleta ou há conflito pendente", async () => {

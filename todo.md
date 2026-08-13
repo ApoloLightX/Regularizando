@@ -101,3 +101,9 @@
 - [x] Verificar explicitamente em teste os três passos do fluxo territorial revisado e a guarda contra resultados sem dados reais.
 - [x] Executar uma validação headless da homepage em viewport 375×812 e registrar a renderização da seção Território/GIS sem aparência de mapa ativo.
 - [x] Persistir no repositório um procedimento reproduzível para a verificação móvel real do módulo Território/GIS.
+- [x] Criar um catálogo oficial de fontes normativas verificadas, separado dos registros da organização e sem obrigações pré-geradas.
+- [x] Permitir a seleção e a importação rastreável de fontes oficiais para a organização piloto, exigindo confirmação humana de escopo.
+- [x] Testar que o catálogo não cria obrigações automaticamente, não vaza entre organizações e preserva URL, jurisdição, hierarquia e vigência da fonte.
+- [x] Testar a preservação de URL, jurisdição, hierarquia e vigência quando uma fonte oficial é importada para a organização.
+- [x] Testar o isolamento de dados de uma importação oficial contra leitura ou reutilização por outra organização.
+- [x] Comprovar em regressão que uma importação oficial criada pela organização A não pode ser reutilizada pela organização B.

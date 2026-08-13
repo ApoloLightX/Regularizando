@@ -280,6 +280,57 @@ export const requirementSources = mysqlTable("requirementSources", {
   foreignKey({ columns: [table.verifiedByUserId], foreignColumns: [users.id], name: "requirement_source_verifier_fk" }).onDelete("set null"),
 ]);
 
+/** Catálogo curado de fontes oficiais reutilizáveis; não contém obrigações, prazos ou interpretações aplicáveis a clientes. */
+export const officialSourceCatalog = mysqlTable("officialSourceCatalog", {
+  id: int("id").autoincrement().primaryKey(),
+  slug: varchar("slug", { length: 120 }).notNull(),
+  title: varchar("title", { length: 260 }).notNull(),
+  issuer: varchar("issuer", { length: 180 }).notNull(),
+  sourceType: mysqlEnum("sourceType", ["norma", "orientacao_tecnica"]).notNull(),
+  jurisdiction: varchar("jurisdiction", { length: 140 }).notNull(),
+  authorityLevel: mysqlEnum("authorityLevel", ["federal", "estadual", "municipal", "setorial", "outro"]).notNull(),
+  identifier: varchar("identifier", { length: 180 }).notNull(),
+  sourceVersionLabel: varchar("sourceVersionLabel", { length: 80 }),
+  sourceUrl: varchar("sourceUrl", { length: 700 }).notNull(),
+  publicationDate: timestamp("publicationDate"),
+  catalogScope: text("catalogScope").notNull(),
+  importLimitNote: text("importLimitNote").notNull(),
+  effectiveFrom: timestamp("effectiveFrom"),
+  effectiveTo: timestamp("effectiveTo"),
+  validationStatus: mysqlEnum("validationStatus", ["verificada", "arquivada"]).default("verificada").notNull(),
+  lastValidatedAt: timestamp("lastValidatedAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("official_catalog_slug_unique").on(table.slug),
+  uniqueIndex("official_catalog_identifier_unique").on(table.identifier),
+  index("official_catalog_status_idx").on(table.validationStatus, table.authorityLevel),
+]);
+
+/** Importação explícita de uma fonte oficial para a fronteira organizacional; a aplicabilidade segue pendente até revisão humana. */
+export const organizationOfficialSourceImports = mysqlTable("organizationOfficialSourceImports", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  catalogSourceId: int("catalogSourceId").notNull(),
+  requirementSourceId: int("requirementSourceId").notNull(),
+  scopeConfirmation: text("scopeConfirmation").notNull(),
+  status: mysqlEnum("status", ["importada", "em_revisao", "confirmada", "arquivada"]).default("importada").notNull(),
+  importedByUserId: int("importedByUserId").notNull(),
+  confirmedByUserId: int("confirmedByUserId"),
+  confirmedAt: timestamp("confirmedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("organization_catalog_import_unique").on(table.organizationId, table.catalogSourceId),
+  uniqueIndex("organization_import_source_unique").on(table.requirementSourceId),
+  index("organization_catalog_import_status_idx").on(table.organizationId, table.status),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "organization_catalog_import_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.catalogSourceId], foreignColumns: [officialSourceCatalog.id], name: "organization_catalog_import_catalog_fk" }).onDelete("restrict"),
+  foreignKey({ columns: [table.requirementSourceId], foreignColumns: [requirementSources.id], name: "organization_catalog_import_source_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.importedByUserId], foreignColumns: [users.id], name: "organization_catalog_import_user_fk" }),
+  foreignKey({ columns: [table.confirmedByUserId], foreignColumns: [users.id], name: "organization_catalog_import_confirmer_fk" }).onDelete("set null"),
+]);
+
 /** Identidade estável de um requisito, sempre apoiada em uma fonte primária. */
 export const requirements = mysqlTable("requirements", {
   id: int("id").autoincrement().primaryKey(),

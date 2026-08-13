@@ -12,9 +12,11 @@ import {
   obligationDecisions,
   obligationEvidenceLinks,
   obligationInstances,
+  officialSourceCatalog,
   organizationInvites,
   organizationMembers,
   organizationOnboarding,
+  organizationOfficialSourceImports,
   organizations,
   pilotRequests,
   requirementSources,
@@ -98,7 +100,7 @@ export async function getDashboardData(organizationId: number) {
 export async function getObligationOverview(organizationId: number) {
   const db = await getDb();
   if (!db) throw new Error("Banco de dados indisponível");
-  const [profiles, sources, requirementRows, versionRows, obligations, evidenceLinks, evidenceRows, reviews, decisions, conflicts, onboardingRows] = await Promise.all([
+  const [profiles, sources, requirementRows, versionRows, obligations, evidenceLinks, evidenceRows, reviews, decisions, conflicts, onboardingRows, catalog, catalogImports] = await Promise.all([
     db.select().from(sectorProfiles).where(eq(sectorProfiles.organizationId, organizationId)).orderBy(desc(sectorProfiles.updatedAt)),
     db.select().from(requirementSources).where(eq(requirementSources.organizationId, organizationId)).orderBy(desc(requirementSources.updatedAt)),
     db.select().from(requirements).where(eq(requirements.organizationId, organizationId)).orderBy(desc(requirements.updatedAt)),
@@ -110,8 +112,10 @@ export async function getObligationOverview(organizationId: number) {
     db.select().from(obligationDecisions).where(eq(obligationDecisions.organizationId, organizationId)).orderBy(desc(obligationDecisions.decidedAt)),
     db.select().from(requirementSourceConflicts).where(eq(requirementSourceConflicts.organizationId, organizationId)).orderBy(desc(requirementSourceConflicts.updatedAt)),
     db.select().from(organizationOnboarding).where(eq(organizationOnboarding.organizationId, organizationId)).limit(1),
+    db.select().from(officialSourceCatalog).where(eq(officialSourceCatalog.validationStatus, "verificada")).orderBy(officialSourceCatalog.identifier),
+    db.select().from(organizationOfficialSourceImports).where(eq(organizationOfficialSourceImports.organizationId, organizationId)).orderBy(desc(organizationOfficialSourceImports.updatedAt)),
   ]);
-  return { profiles, sources, requirements: requirementRows, versions: versionRows, obligations, evidenceLinks, evidences: evidenceRows, reviews, decisions, conflicts, onboarding: onboardingRows[0] ?? null };
+  return { profiles, sources, requirements: requirementRows, versions: versionRows, obligations, evidenceLinks, evidences: evidenceRows, reviews, decisions, conflicts, onboarding: onboardingRows[0] ?? null, catalog, catalogImports };
 }
 
 export function deriveObligationEvidenceStatus(statuses: Array<"enviada" | "verificada" | "rejeitada">): "ausente" | "enviada" | "verificada" | "rejeitada" {
@@ -136,6 +140,41 @@ export async function createRequirementSource(input: typeof requirementSources.$
   const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
   validateRequirementSourceProvenance(input);
   return Number((await db.insert(requirementSources).values(input))[0].insertId);
+}
+
+export async function getOfficialSourceCatalog() {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  return db.select().from(officialSourceCatalog).where(eq(officialSourceCatalog.validationStatus, "verificada")).orderBy(officialSourceCatalog.identifier);
+}
+
+export function buildImportedOfficialSource(catalog: Pick<typeof officialSourceCatalog.$inferSelect, "title" | "issuer" | "sourceType" | "jurisdiction" | "authorityLevel" | "identifier" | "sourceVersionLabel" | "sourceUrl" | "publicationDate" | "effectiveFrom" | "effectiveTo">, input: { organizationId: number; importedByUserId: number }) {
+  return { organizationId: input.organizationId, title: catalog.title, issuer: catalog.issuer, sourceType: catalog.sourceType === "norma" ? "norma" as const : "orientacao_tecnica" as const, jurisdiction: catalog.jurisdiction, authorityLevel: catalog.authorityLevel, officialOriginStatus: "oficial" as const, identifier: catalog.identifier, sourceVersionLabel: catalog.sourceVersionLabel, sourceUrl: catalog.sourceUrl, publicationDate: catalog.publicationDate, effectiveFrom: catalog.effectiveFrom, effectiveTo: catalog.effectiveTo, verificationStatus: "em_revisao" as const, createdByUserId: input.importedByUserId };
+}
+
+export async function importOfficialSourceToOrganization(input: { catalogSourceId: number; organizationId: number; importedByUserId: number; scopeConfirmation: string }) {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  return db.transaction(async (tx) => {
+    const catalog = (await tx.select().from(officialSourceCatalog).where(and(eq(officialSourceCatalog.id, input.catalogSourceId), eq(officialSourceCatalog.validationStatus, "verificada"))).limit(1))[0];
+    if (!catalog) throw new Error("A fonte oficial não está disponível para importação.");
+    const existing = (await tx.select().from(organizationOfficialSourceImports).where(and(eq(organizationOfficialSourceImports.organizationId, input.organizationId), eq(organizationOfficialSourceImports.catalogSourceId, input.catalogSourceId))).limit(1))[0];
+    if (existing) throw new Error("Esta fonte já foi importada pela organização atual.");
+    const sourceResult = await tx.insert(requirementSources).values(buildImportedOfficialSource(catalog, input));
+    const requirementSourceId = Number(sourceResult[0].insertId);
+    const importResult = await tx.insert(organizationOfficialSourceImports).values({ organizationId: input.organizationId, catalogSourceId: catalog.id, requirementSourceId, scopeConfirmation: input.scopeConfirmation, status: "em_revisao", importedByUserId: input.importedByUserId });
+    return { importId: Number(importResult[0].insertId), requirementSourceId, catalog };
+  });
+}
+
+export async function getOfficialSourceImportForOrganization(importId: number, organizationId: number) {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  const record = (await db.select().from(organizationOfficialSourceImports).where(and(eq(organizationOfficialSourceImports.id, importId), eq(organizationOfficialSourceImports.organizationId, organizationId))).limit(1))[0];
+  if (!record) throw new Error("A importação de fonte não pertence à organização atual.");
+  assertOfficialSourceImportScope(record, organizationId);
+  return record;
+}
+
+export function assertOfficialSourceImportScope(record: { organizationId: number }, organizationId: number) {
+  if (record.organizationId !== organizationId) throw new Error("A importação de fonte não pertence à organização atual.");
 }
 
 export function validateRequirementSourceProvenance(source: { officialOriginStatus?: "oficial" | "documento_organizacao" | "pendente" | null; sourceUrl?: string | null; jurisdiction?: string | null }) {
