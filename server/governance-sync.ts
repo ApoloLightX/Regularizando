@@ -80,6 +80,32 @@ function parseMetadata(metadata: string | null) {
   }
 }
 
+export function buildGovernanceEventReplica(event: {
+  eventId: string;
+  sourceEventKey: string;
+  category: GovernanceCategory;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  organizationId: number | null;
+  actorUserId: number | null;
+  metadata: string | null;
+  occurredAt: Date;
+}) {
+  return {
+    id: event.eventId,
+    source_event_id: event.sourceEventKey,
+    category: event.category,
+    action: event.action,
+    entity_type: event.entityType,
+    entity_id: event.entityId,
+    organization_ref: event.organizationId ? `organization:${event.organizationId}` : null,
+    actor_ref: event.actorUserId ? `user:${event.actorUserId}` : null,
+    metadata: parseMetadata(event.metadata),
+    occurred_at: event.occurredAt.toISOString(),
+  };
+}
+
 function getSupabaseConfig() {
   const baseUrl = process.env.SUPABASE_URL?.replace(/\/+$/, "");
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -195,18 +221,7 @@ export async function drainGovernanceSyncQueue(limit = 20) {
   let syncedMilestones = 0;
   for (const event of events) {
     try {
-      await postToSupabase("regularizando_governance_events", {
-        id: event.eventId,
-        source_event_id: event.sourceEventKey,
-        category: event.category,
-        action: event.action,
-        entity_type: event.entityType,
-        entity_id: event.entityId,
-        organization_ref: event.organizationId ? `organization:${event.organizationId}` : null,
-        actor_ref: event.actorUserId ? `user:${event.actorUserId}` : null,
-        metadata: parseMetadata(event.metadata),
-        occurred_at: event.occurredAt.toISOString(),
-      });
+      await postToSupabase("regularizando_governance_events", buildGovernanceEventReplica(event));
       await markEventSynced(event.id);
       syncedEvents += 1;
     } catch (error) {
