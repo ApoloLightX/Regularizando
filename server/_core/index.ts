@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
+import { randomUUID } from "crypto";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
@@ -9,17 +10,43 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { runGovernanceSyncSchedule } from "../governance-scheduled";
+import { runRateLimitCleanupSchedule } from "../rate-limit-scheduled";
+import { consumeRateLimitBucket } from "../db";
+import { queueGovernanceEvent } from "../governance-sync";
 
-const apiWindows = new Map<string, { count: number; resetAt: number }>();
-function apiRateLimit(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const now = Date.now();
-  const key = req.ip || req.socket.remoteAddress || "unknown";
-  const current = apiWindows.get(key);
-  const entry = !current || current.resetAt <= now ? { count: 0, resetAt: now + 60_000 } : current;
-  entry.count += 1;
-  apiWindows.set(key, entry);
-  if (entry.count > 120) return res.status(429).json({ error: "Muitas requisições; tente novamente em instantes." });
-  next();
+const RATE_LIMITS = {
+  trpc: { limit: 120, windowMs: 60_000, failClosed: false },
+  upload: { limit: 12, windowMs: 60_000, failClosed: true },
+  ai: { limit: 20, windowMs: 60_000, failClosed: true },
+  admin: { limit: 60, windowMs: 60_000, failClosed: true },
+} as const;
+
+function resolveRateLimitPolicy(req: express.Request) {
+  const path = req.path.toLowerCase();
+  if (path.includes("evidences.upload")) return { scope: "upload", ...RATE_LIMITS.upload };
+  if (path.includes("ai") || path.includes("analysis")) return { scope: "ai", ...RATE_LIMITS.ai };
+  if (path.includes("datagovernance") || path.includes("leads")) return { scope: "admin", ...RATE_LIMITS.admin };
+  return { scope: "trpc", ...RATE_LIMITS.trpc };
+}
+
+async function apiRateLimit(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const policy = resolveRateLimitPolicy(req);
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
+  try {
+    const bucket = await consumeRateLimitBucket({ bucketKey: `${policy.scope}:ip:${ip}`, scope: policy.scope, windowMs: policy.windowMs });
+    if (bucket.requestCount > policy.limit) {
+      const retryAfter = Math.max(1, Math.ceil((bucket.expiresAt.getTime() - Date.now()) / 1000));
+      res.setHeader("Retry-After", String(retryAfter));
+      console.warn("[rate-limit] blocked", { scope: policy.scope, ip, retryAfter });
+      void queueGovernanceEvent({ sourceEventKey: `rate-limit:${randomUUID()}`, category: "cybersecurity", action: "RATE_LIMIT_BLOCKED", entityType: "rate_limit_bucket", metadata: { scope: policy.scope, retryAfter, criterion: "ip" } }).catch(error => console.warn("[rate-limit] audit deferred", error));
+      return res.status(429).json({ error: "Muitas requisições; tente novamente em instantes." });
+    }
+    return next();
+  } catch (error) {
+    console.error("[rate-limit] bucket unavailable", { scope: policy.scope, failClosed: policy.failClosed, error });
+    if (policy.failClosed) return res.status(503).json({ error: "Controle temporariamente indisponível para esta operação sensível." });
+    return next();
+  }
 }
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -50,6 +77,7 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   app.post("/api/scheduled/governance-sync", runGovernanceSyncSchedule);
+  app.post("/api/scheduled/rate-limit-cleanup", runRateLimitCleanupSchedule);
   // tRPC API
   app.use(
     "/api/trpc",

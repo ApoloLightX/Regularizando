@@ -106,6 +106,41 @@
       "when": 1786661121013,
       "tag": "0014_careless_mandrill",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "5",
+      "when": 1786678177574,
+      "tag": "0015_modern_rictor",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1786678292166,
+      "tag": "0016_deep_stick",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1786706639684,
+      "tag": "0017_organic_rocket_racer",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1786710156028,
+      "tag": "0018_overjoyed_roxanne_simpson",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1786710383803,
+      "tag": "0019_chemical_zodiak",
+      "breakpoints": true
     }
   ]
 }

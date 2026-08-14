@@ -201,15 +201,39 @@ export const evidences = mysqlTable("evidences", {
   fileUrl: varchar("fileUrl", { length: 700 }).notNull(),
   fileName: varchar("fileName", { length: 260 }).notNull(),
   mimeType: varchar("mimeType", { length: 120 }).notNull(),
+  observedMimeType: varchar("observedMimeType", { length: 120 }),
   sizeBytes: int("sizeBytes").notNull(),
+  sha256: varchar("sha256", { length: 64 }),
+  quarantineStatus: mysqlEnum("quarantineStatus", ["uploaded", "quarantined_unscanned", "validated", "approved_for_processing", "blocked"]).default("uploaded").notNull(),
+  structuralValidationStatus: mysqlEnum("structuralValidationStatus", ["pendente", "aprovada", "rejeitada"]).default("pendente").notNull(),
+  quarantineNote: varchar("quarantineNote", { length: 500 }),
+  processingAuthorizedByUserId: int("processingAuthorizedByUserId"),
+  processingAuthorizedAt: timestamp("processingAuthorizedAt"),
+  downloadAuthorizedByUserId: int("downloadAuthorizedByUserId"),
+  downloadAuthorizedAt: timestamp("downloadAuthorizedAt"),
+  downloadAuthorizationNote: varchar("downloadAuthorizationNote", { length: 500 }),
   reviewStatus: mysqlEnum("reviewStatus", ["enviada", "verificada", "rejeitada"]).default("enviada").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => [
   index("evidence_organization_idx").on(table.organizationId),
   index("evidence_entity_idx").on(table.entityType, table.entityId),
+  index("evidence_quarantine_idx").on(table.organizationId, table.quarantineStatus),
   foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "evidence_organization_fk" }).onDelete("cascade"),
   foreignKey({ columns: [table.uploadedByUserId], foreignColumns: [users.id], name: "evidence_uploader_fk" }),
+  foreignKey({ columns: [table.processingAuthorizedByUserId], foreignColumns: [users.id], name: "evidence_processing_authorizer_fk" }).onDelete("set null"),
+  foreignKey({ columns: [table.downloadAuthorizedByUserId], foreignColumns: [users.id], name: "evidence_download_authorizer_fk" }).onDelete("set null"),
 ]);
+
+/** Bucket compartilhado por instâncias; expira sem depender de memória local. */
+export const rateLimitBuckets = mysqlTable("rateLimitBuckets", {
+  id: int("id").autoincrement().primaryKey(),
+  bucketKey: varchar("bucketKey", { length: 128 }).notNull().unique(),
+  scope: varchar("scope", { length: 40 }).notNull(),
+  windowStart: timestamp("windowStart").notNull(),
+  requestCount: int("requestCount").default(0).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [index("rate_limit_expiry_idx").on(table.expiresAt), index("rate_limit_scope_expiry_idx").on(table.scope, table.expiresAt)]);
 
 /** Revisão humana de evidências: toda decisão traz responsável, estado e data. */
 export const reviewRequests = mysqlTable("reviewRequests", {
@@ -229,6 +253,85 @@ export const reviewRequests = mysqlTable("reviewRequests", {
   foreignKey({ columns: [table.evidenceId], foreignColumns: [evidences.id], name: "review_evidence_fk" }).onDelete("cascade"),
   foreignKey({ columns: [table.requestedByUserId], foreignColumns: [users.id], name: "review_requester_fk" }),
   foreignKey({ columns: [table.reviewerUserId], foreignColumns: [users.id], name: "reviewer_user_fk" }).onDelete("set null"),
+]);
+
+/** Política configurável por organização; não executa exclusão automática sem aprovação humana. */
+export const dataRetentionPolicies = mysqlTable("dataRetentionPolicies", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  dataCategory: mysqlEnum("dataCategory", ["evidencia", "lead", "auditoria", "conta", "operacional"]).notNull(),
+  retentionDays: int("retentionDays"),
+  legalBasisNote: text("legalBasisNote").notNull(),
+  disposalMethod: mysqlEnum("disposalMethod", ["revisao_manual", "anonimizacao_revisada", "exclusao_revisada"]).default("revisao_manual").notNull(),
+  status: mysqlEnum("status", ["rascunho", "em_revisao", "ativa", "substituida"]).default("rascunho").notNull(),
+  approvedByUserId: int("approvedByUserId"),
+  approvedAt: timestamp("approvedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("retention_policy_org_category_unique").on(table.organizationId, table.dataCategory),
+  index("retention_policy_org_status_idx").on(table.organizationId, table.status),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "retention_policy_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.approvedByUserId], foreignColumns: [users.id], name: "retention_policy_approver_fk" }).onDelete("set null"),
+]);
+
+/** Snapshot imutável de cada atualização de política; a tabela principal contém apenas o estado corrente. */
+export const dataRetentionPolicyVersions = mysqlTable("dataRetentionPolicyVersions", {
+  id: int("id").autoincrement().primaryKey(),
+  policyId: int("policyId").notNull(),
+  organizationId: int("organizationId").notNull(),
+  versionNumber: int("versionNumber").notNull(),
+  dataCategory: mysqlEnum("dataCategory", ["evidencia", "lead", "auditoria", "conta", "operacional"]).notNull(),
+  retentionDays: int("retentionDays"),
+  legalBasisNote: text("legalBasisNote").notNull(),
+  disposalMethod: mysqlEnum("disposalMethod", ["revisao_manual", "anonimizacao_revisada", "exclusao_revisada"]).notNull(),
+  status: mysqlEnum("status", ["rascunho", "em_revisao", "ativa", "substituida"]).notNull(),
+  recordedByUserId: int("recordedByUserId").notNull(),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("retention_policy_version_unique").on(table.policyId, table.versionNumber),
+  index("retention_policy_version_org_idx").on(table.organizationId, table.dataCategory, table.recordedAt),
+  foreignKey({ columns: [table.policyId], foreignColumns: [dataRetentionPolicies.id], name: "retention_policy_version_policy_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "retention_policy_version_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.recordedByUserId], foreignColumns: [users.id], name: "retention_policy_version_recorder_fk" }).onDelete("restrict"),
+]);
+
+/** Pedido de direito do titular; a referência é pseudonimizada e qualquer descarte exige revisão manual. */
+export const dataSubjectRequests = mysqlTable("dataSubjectRequests", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
+  subjectReferenceHash: varchar("subjectReferenceHash", { length: 64 }).notNull(),
+  requestType: mysqlEnum("requestType", ["acesso", "exportacao", "correcao", "eliminacao", "anonimizacao", "oposicao"]).notNull(),
+  status: mysqlEnum("status", ["recebida", "em_revisao", "aguardando_controlador", "atendida", "recusada", "cancelada"]).default("recebida").notNull(),
+  scopeNote: text("scopeNote").notNull(),
+  decisionRationale: text("decisionRationale"),
+  handledByUserId: int("handledByUserId"),
+  handledAt: timestamp("handledAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  index("subject_request_org_status_idx").on(table.organizationId, table.status),
+  index("subject_request_reference_idx").on(table.subjectReferenceHash, table.createdAt),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "subject_request_organization_fk" }).onDelete("set null"),
+  foreignKey({ columns: [table.handledByUserId], foreignColumns: [users.id], name: "subject_request_handler_fk" }).onDelete("set null"),
+]);
+
+/** Evidências e marcos de atendimento; armazena referências e justificativas, não bytes de documentos. */
+export const dataSubjectRequestEvents = mysqlTable("dataSubjectRequestEvents", {
+  id: int("id").autoincrement().primaryKey(),
+  requestId: int("requestId").notNull(),
+  organizationId: int("organizationId").notNull(),
+  eventType: mysqlEnum("eventType", ["evidencia", "nota", "decisao"]).notNull(),
+  evidenceReference: varchar("evidenceReference", { length: 500 }),
+  note: text("note").notNull(),
+  recordedByUserId: int("recordedByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  index("subject_request_event_request_idx").on(table.requestId, table.createdAt),
+  index("subject_request_event_org_idx").on(table.organizationId, table.createdAt),
+  foreignKey({ columns: [table.requestId], foreignColumns: [dataSubjectRequests.id], name: "subject_request_event_request_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.organizationId], foreignColumns: [organizations.id], name: "subject_request_event_organization_fk" }).onDelete("cascade"),
+  foreignKey({ columns: [table.recordedByUserId], foreignColumns: [users.id], name: "subject_request_event_recorder_fk" }).onDelete("restrict"),
 ]);
 
 /** Perfil contextual da organização; orienta o vocabulário sem substituir a fonte documental. */

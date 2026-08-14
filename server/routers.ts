@@ -9,6 +9,8 @@ import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_
 import {
   acceptOrganizationInvite,
   activateSectorProfile,
+  authorizeEvidenceAccess,
+  blockEvidenceForIntegrityMismatch,
   assertEntityBelongsToOrganization,
   assignCapaResponsible,
   assignObligationResponsible,
@@ -16,6 +18,8 @@ import {
   createCapaAction,
   createAuditEvent,
   createCondition,
+  createDataSubjectRequest,
+  recordDataSubjectRequestEvent,
   createEsgMetric,
   createEvidence,
   createIncident,
@@ -34,6 +38,7 @@ import {
   decideObligation,
   decideReviewRequest,
   getDashboardData,
+  getDataGovernanceOverview,
   getEvidenceForOrganization,
   getInviteByHash,
   getMemberOfOrganizationByEmail,
@@ -50,6 +55,7 @@ import {
   getSourceForOrganization,
   getTeamOverview,
   hasPendingSourceConflict,
+  handleDataSubjectRequest,
   linkEvidenceToObligation,
   qualifyPilotRequest,
   resolveRequirementSourceConflict,
@@ -57,6 +63,7 @@ import {
   reviewRequirementApplicability,
   revokeOrganizationInvite,
   updateOrganizationOnboarding,
+  upsertRetentionPolicy,
   verifyRequirementSource,
   verifyRequirementVersion,
   type OwnedEntityType,
@@ -78,6 +85,19 @@ const hashInviteToken = (token: string) => createHash("sha256").update(token).di
 async function getRequiredOrganization(userId: number) { return requireWorkspaceContext(await getOrganizationForUser(userId)); }
 function requireTeamManager(role: string) { if (!canManageTeam(role)) throw new TRPCError({ code: "FORBIDDEN", message: "Seu perfil não pode gerenciar a equipe." }); }
 function requireTechnicalReviewer(role: string) { if (!canReviewEvidence(role)) throw new TRPCError({ code: "FORBIDDEN", message: "Esta ação exige revisão técnica humana autorizada." }); }
+
+async function assertEvidenceIntegrityBeforeAuthorization(input: { evidenceId: number; organizationId: number; fileKey: string; expectedHash: string | null; expectedSize: number }) {
+  if (!input.expectedHash) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "A evidência não possui hash de integridade registrado e não pode ser autorizada." });
+  const signedUrl = await storageGetSignedUrl(input.fileKey);
+  const response = await fetch(signedUrl);
+  if (!response.ok) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "Não foi possível verificar a integridade da evidência antes da autorização." });
+  const bytes = Buffer.from(await response.arrayBuffer());
+  const observedHash = createHash("sha256").update(bytes).digest("hex");
+  if (bytes.byteLength !== input.expectedSize || observedHash !== input.expectedHash) {
+    await blockEvidenceForIntegrityMismatch({ evidenceId: input.evidenceId, organizationId: input.organizationId, note: "Integridade divergente antes da autorização: novo upload e revisão humana são necessários." });
+    throw new TRPCError({ code: "PRECONDITION_FAILED", message: "A integridade da evidência divergiu; o arquivo foi bloqueado e exige novo upload." });
+  }
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -107,6 +127,13 @@ export const appRouter = router({
       });
       return qualification.lead;
     }),
+  }),
+  dataGovernance: router({
+    overview: protectedProcedure.query(async ({ ctx }) => { const org = await getRequiredOrganization(ctx.user.id); requireTeamManager(org.membership.role); return getDataGovernanceOverview(org.organization.id); }),
+    setRetentionPolicy: protectedProcedure.input(z.object({ dataCategory: z.enum(["evidencia", "lead", "auditoria", "conta", "operacional"]), retentionDays: z.number().int().positive().max(36500).nullable(), legalBasisNote: z.string().trim().min(12).max(4000), disposalMethod: z.enum(["revisao_manual", "anonimizacao_revisada", "exclusao_revisada"]), status: z.enum(["rascunho", "em_revisao", "ativa"]) })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); requireTeamManager(org.membership.role); const policy = await upsertRetentionPolicy({ ...input, organizationId: org.organization.id, approvedByUserId: input.status === "ativa" ? ctx.user.id : null, approvedAt: input.status === "ativa" ? new Date() : null, recordedByUserId: ctx.user.id }); await createAuditEvent({ organizationId: org.organization.id, actorUserId: ctx.user.id, action: "RETENTION_POLICY_UPDATED", resourceType: "retention_policy", resourceId: policy.id, metadata: JSON.stringify({ category: input.dataCategory, status: input.status, disposalMethod: input.disposalMethod }) }); return policy; }),
+    createSubjectRequest: protectedProcedure.input(z.object({ subjectReference: z.string().trim().min(3).max(320), requestType: z.enum(["acesso", "exportacao", "correcao", "eliminacao", "anonimizacao", "oposicao"]), scopeNote: z.string().trim().min(12).max(4000) })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); requireTeamManager(org.membership.role); const requestId = await createDataSubjectRequest({ organizationId: org.organization.id, subjectReferenceHash: createHash("sha256").update(input.subjectReference.trim().toLocaleLowerCase("pt-BR")).digest("hex"), requestType: input.requestType, scopeNote: input.scopeNote }); await createAuditEvent({ organizationId: org.organization.id, actorUserId: ctx.user.id, action: "DATA_SUBJECT_REQUEST_CREATED", resourceType: "data_subject_request", resourceId: requestId, metadata: JSON.stringify({ requestType: input.requestType }) }); return { requestId }; }),
+    recordSubjectRequestEvent: protectedProcedure.input(z.object({ requestId: z.number().int().positive(), eventType: z.enum(["evidencia", "nota"]), evidenceReference: z.string().trim().max(500).optional(), note: z.string().trim().min(12).max(4000) })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); requireTeamManager(org.membership.role); const eventId = await recordDataSubjectRequestEvent({ requestId: input.requestId, organizationId: org.organization.id, eventType: input.eventType, evidenceReference: input.evidenceReference || null, note: input.note, recordedByUserId: ctx.user.id }); await createAuditEvent({ organizationId: org.organization.id, actorUserId: ctx.user.id, action: "DATA_SUBJECT_REQUEST_EVENT_RECORDED", resourceType: "data_subject_request", resourceId: input.requestId, metadata: JSON.stringify({ eventId, eventType: input.eventType }) }); return { eventId }; }),
+    handleSubjectRequest: protectedProcedure.input(z.object({ requestId: z.number().int().positive(), status: z.enum(["em_revisao", "aguardando_controlador", "atendida", "recusada", "cancelada"]), decisionRationale: z.string().trim().min(12).max(4000) })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); requireTeamManager(org.membership.role); const request = await handleDataSubjectRequest({ ...input, organizationId: org.organization.id, handledByUserId: ctx.user.id }); await createAuditEvent({ organizationId: org.organization.id, actorUserId: ctx.user.id, action: "DATA_SUBJECT_REQUEST_REVIEWED", resourceType: "data_subject_request", resourceId: request.id, metadata: JSON.stringify({ status: input.status }) }); return request; }),
   }),
   publicValidation: router({
     overview: adminProcedure.query(() => getPublicValidationOverview()),
@@ -148,8 +175,9 @@ export const appRouter = router({
   }),
   incidents: router({ create: protectedProcedure.input(z.object({ title: z.string().min(3).max(260), siteId: z.number().int().positive().optional(), incidentType: z.enum(["incidente", "quase_acidente", "condicao_insegura", "ambiental"]), severity: z.enum(["baixa", "moderada", "alta", "critica"]), occurredAt: z.number().int() })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); if (input.siteId) await assertEntityBelongsToOrganization(org.organization.id, "site", input.siteId); return createIncident({ ...input, organizationId: org.organization.id, occurredAt: new Date(input.occurredAt) }); }) }),
   esg: router({ createMetric: protectedProcedure.input(z.object({ code: z.string().min(2).max(80), title: z.string().min(3).max(220), category: z.enum(["ambiental", "social", "governanca"]), value: z.number().finite(), target: z.number().finite().optional(), unit: z.string().min(1).max(40), periodLabel: z.string().min(2).max(40), sourceDescription: z.string().max(240).optional(), status: z.enum(["rascunho", "em_revisao", "verificado"]).default("rascunho") })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); return createEsgMetric({ ...input, organizationId: org.organization.id, value: String(input.value), target: input.target === undefined ? null : String(input.target) }); }) }),
-  evidences: router({ upload: protectedProcedure.input(z.object({ entityType, entityId: z.number().int().positive().optional(), fileName: z.string().min(1).max(260), mimeType: z.string().min(1).max(120), sizeBytes: z.number().int().positive(), base64: z.string().min(1).max(12_000_000) })).mutation(async ({ ctx, input }) => { validateEvidenceUpload(input); const org = await getRequiredOrganization(ctx.user.id); if (input.entityId && input.entityType === "outro") throw new Error("Registros do tipo 'outro' não podem receber ID de vínculo."); if (input.entityId && input.entityType !== "outro") await assertEntityBelongsToOrganization(org.organization.id, input.entityType as OwnedEntityType, input.entityId); const bytes = Buffer.from(input.base64, "base64"); if (bytes.byteLength !== input.sizeBytes) throw new Error("O tamanho do arquivo não confere com o upload."); const fileName = safeEvidenceName(input.fileName); const stored = await storagePut(`organizations/${org.organization.id}/${input.entityType}/${randomUUID()}-${fileName}`, bytes, input.mimeType); const evidenceId = await createEvidence({ organizationId: org.organization.id, uploadedByUserId: ctx.user.id, entityType: input.entityType, entityId: input.entityId ?? null, fileKey: stored.key, fileUrl: stored.url, fileName, mimeType: input.mimeType, sizeBytes: input.sizeBytes }); await createReviewRequest({ organizationId: org.organization.id, evidenceId, requestedByUserId: ctx.user.id }); await createAuditEvent({ organizationId: org.organization.id, actorUserId: ctx.user.id, action: "EVIDENCE_UPLOAD", resourceType: "evidence", resourceId: evidenceId, metadata: JSON.stringify({ entityType: input.entityType, mimeType: input.mimeType, sizeBytes: input.sizeBytes }) }); return evidenceId; }),
-    download: protectedProcedure.input(z.object({ evidenceId: z.number().int().positive() })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); const evidence = await getEvidenceForOrganization(input.evidenceId, org.organization.id); const url = await storageGetSignedUrl(evidence.fileKey); await createAuditEvent({ organizationId: org.organization.id, actorUserId: ctx.user.id, action: "EVIDENCE_DOWNLOAD", resourceType: "evidence", resourceId: evidence.id, metadata: JSON.stringify({ mimeType: evidence.mimeType, sizeBytes: evidence.sizeBytes }) }); return { url }; }),
+  evidences: router({ upload: protectedProcedure.input(z.object({ entityType, entityId: z.number().int().positive().optional(), fileName: z.string().min(1).max(260), mimeType: z.string().min(1).max(120), sizeBytes: z.number().int().positive(), base64: z.string().min(1).max(12_000_000) })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); if (input.entityId && input.entityType === "outro") throw new Error("Registros do tipo 'outro' não podem receber ID de vínculo."); if (input.entityId && input.entityType !== "outro") await assertEntityBelongsToOrganization(org.organization.id, input.entityType as OwnedEntityType, input.entityId); const bytes = Buffer.from(input.base64, "base64"); validateEvidenceUpload({ ...input, bytes }); const fileName = safeEvidenceName(input.fileName); const sha256 = createHash("sha256").update(bytes).digest("hex"); const stored = await storagePut(`organizations/${org.organization.id}/quarantine/${randomUUID()}-${fileName}`, bytes, input.mimeType); const evidenceId = await createEvidence({ organizationId: org.organization.id, uploadedByUserId: ctx.user.id, entityType: input.entityType, entityId: input.entityId ?? null, fileKey: stored.key, fileUrl: stored.url, fileName, mimeType: input.mimeType, observedMimeType: input.mimeType, sizeBytes: input.sizeBytes, sha256, quarantineStatus: "quarantined_unscanned", structuralValidationStatus: "aprovada", quarantineNote: "Integridade e estrutura validadas; não verificado por antimalware." }); await createReviewRequest({ organizationId: org.organization.id, evidenceId, requestedByUserId: ctx.user.id }); await createAuditEvent({ organizationId: org.organization.id, actorUserId: ctx.user.id, action: "EVIDENCE_QUARANTINED", resourceType: "evidence", resourceId: evidenceId, metadata: JSON.stringify({ entityType: input.entityType, mimeType: input.mimeType, sizeBytes: input.sizeBytes, structuralValidation: "aprovada" }) }); return evidenceId; }),
+    authorize: protectedProcedure.input(z.object({ evidenceId: z.number().int().positive(), authorization: z.enum(["processing", "download"]), note: z.string().trim().min(12).max(500) })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); requireTechnicalReviewer(org.membership.role); const pendingEvidence = await getEvidenceForOrganization(input.evidenceId, org.organization.id); await assertEvidenceIntegrityBeforeAuthorization({ evidenceId: pendingEvidence.id, organizationId: org.organization.id, fileKey: pendingEvidence.fileKey, expectedHash: pendingEvidence.sha256, expectedSize: pendingEvidence.sizeBytes }); const evidence = await authorizeEvidenceAccess({ ...input, organizationId: org.organization.id, authorizedByUserId: ctx.user.id }); await createAuditEvent({ organizationId: org.organization.id, actorUserId: ctx.user.id, action: input.authorization === "processing" ? "EVIDENCE_PROCESSING_AUTHORIZED" : "EVIDENCE_DOWNLOAD_AUTHORIZED", resourceType: "evidence", resourceId: evidence.id, metadata: JSON.stringify({ authorization: input.authorization, previousQuarantineStatus: input.authorization === "processing" ? "validated" : evidence.quarantineStatus }) }); return evidence; }),
+    download: protectedProcedure.input(z.object({ evidenceId: z.number().int().positive() })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); const evidence = await getEvidenceForOrganization(input.evidenceId, org.organization.id); if (evidence.quarantineStatus !== "approved_for_processing" || !evidence.downloadAuthorizedAt) throw new TRPCError({ code: "FORBIDDEN", message: "O arquivo exige autorizações humanas separadas de processamento e download antes de ficar disponível." }); const url = await storageGetSignedUrl(evidence.fileKey); await createAuditEvent({ organizationId: org.organization.id, actorUserId: ctx.user.id, action: "EVIDENCE_DOWNLOAD", resourceType: "evidence", resourceId: evidence.id, metadata: JSON.stringify({ mimeType: evidence.mimeType, sizeBytes: evidence.sizeBytes }) }); return { url }; }),
   }),
   reviews: router({
     decide: protectedProcedure.input(z.object({ reviewId: z.number().int().positive(), status: z.enum(["aprovada", "rejeitada"]), note: z.string().trim().max(500).optional() })).mutation(async ({ ctx, input }) => { const org = await getRequiredOrganization(ctx.user.id); if (!canReviewEvidence(org.membership.role)) throw new TRPCError({ code: "FORBIDDEN", message: "Seu perfil não pode revisar evidências." }); await decideReviewRequest({ reviewId: input.reviewId, organizationId: org.organization.id, reviewerUserId: ctx.user.id, status: input.status, note: input.note }); await createAuditEvent({ organizationId: org.organization.id, actorUserId: ctx.user.id, action: "EVIDENCE_REVIEW_DECIDED", resourceType: "review", resourceId: input.reviewId, metadata: JSON.stringify({ status: input.status }) }); return { success: true } as const; }),

@@ -14,6 +14,35 @@ describe("private evidence downloads", () => {
     expect(db).toContain("eq(evidences.organizationId, organizationId)");
   });
 
+  it("requires independent human authorizations for processing and download", () => {
+    const router = fs.readFileSync(path.join(root, "server", "routers.ts"), "utf8");
+    const db = fs.readFileSync(path.join(root, "server", "db.ts"), "utf8");
+    expect(router).toContain('authorization: z.enum(["processing", "download"])');
+    expect(router).toContain("EVIDENCE_PROCESSING_AUTHORIZED");
+    expect(router).toContain("EVIDENCE_DOWNLOAD_AUTHORIZED");
+    expect(router).toContain("!evidence.downloadAuthorizedAt");
+    expect(db).toContain('authorization: "processing" | "download"');
+    expect(db).toContain("A autorização de download exige autorização prévia de processamento.");
+  });
+
+  it("checks SHA-256 again before authorization and blocks mismatches", () => {
+    const router = fs.readFileSync(path.join(root, "server", "routers.ts"), "utf8");
+    const db = fs.readFileSync(path.join(root, "server", "db.ts"), "utf8");
+    expect(router).toContain("assertEvidenceIntegrityBeforeAuthorization");
+    expect(router).toContain("createHash(\"sha256\").update(bytes).digest(\"hex\")");
+    expect(router).toContain("blockEvidenceForIntegrityMismatch");
+    expect(router).toContain("Integridade divergente antes da autorização");
+    expect(db).toContain('quarantineStatus: "blocked"');
+  });
+
+  it("documents evidence as untrusted content for future AI integrations", () => {
+    const guidance = fs.readFileSync(path.join(root, "docs", "untrusted-document-content.md"), "utf8");
+    expect(guidance).toContain("conteúdo não confiável");
+    expect(guidance).toContain("nunca podem alterar permissões");
+    expect(guidance).toContain("revisão técnica humana");
+    expect(guidance).toContain("Não substitui antivírus");
+  });
+
   it("does not let the generic storage proxy sign organization document keys", () => {
     const proxy = fs.readFileSync(path.join(root, "server", "_core", "storageProxy.ts"), "utf8");
     expect(proxy).toContain('key.startsWith("organizations/")');
@@ -24,7 +53,9 @@ describe("private evidence downloads", () => {
     const server = fs.readFileSync(path.join(root, "server", "_core", "index.ts"), "utf8");
     expect(server).toContain("function apiRateLimit");
     expect(server).toContain('app.use(\n    "/api/trpc",\n    apiRateLimit');
-    expect(server).toContain("entry.count > 120");
+    expect(server).toContain("consumeRateLimitBucket");
+    expect(server).toContain('res.setHeader("Retry-After"');
+    expect(server).not.toContain("apiWindows");
   });
 
   it("keeps the pilot private by allowing organization creation only for the project owner", () => {

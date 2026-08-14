@@ -144,3 +144,30 @@
 - [x] Consolidar e publicar o roadmap por níveis de validação, separando entrega técnica atual de validações futuras com parceiro.
 - [x] Documentar o estado verificável de banco, Auth, RBAC, armazenamento, auditoria, backup, criptografia, LGPD e hardening residual.
 - [x] Identificar especificamente as capacidades que dependem de dados de futuro parceiro, sem classificá-las como bloqueio da entrega atual.
+- [x] Modelar política operacional de retenção, classes de dados, exportação, exclusão e pedidos de titulares com revisão humana.
+- [x] Implementar registros e fluxos administrativos mínimos para solicitações de direitos LGPD, sem apagar dados ou arquivos automaticamente.
+- [x] Substituir o limite de taxa em memória por um controle compartilhado e auditável adequado à execução distribuída.
+- [x] Implementar quarentena de upload, verificação de integridade e liberação humana antes de arquivos ficarem disponíveis como evidência.
+- [x] Criar checklist de ativação contratual e operacional para futuro piloto privado, sem simular parceiro ou dados de cliente.
+- [x] Reestruturar a página pública de Segurança como Trust Center com estados implementado, em validação e planejado.
+- [x] Expor a validação técnica pública no Trust Center sem tornar a rota administrativa pública ou indexável.
+- [x] Ajustar a comunicação de escopo sugerido do piloto e a separação de módulos de ESG e Território/GIS.
+- [x] Implementar buckets de rate limit atômicos por IP, usuário e organização, com limites distintos, Retry-After, auditoria de bloqueios e comportamento definido em indisponibilidade.
+- [x] Criar limpeza controlada de buckets de rate limit expirados sem depender de memória local.
+- [x] Evoluir evidências para estados de quarentena explícitos, impedindo download, processamento automatizado e vínculo como evidência válida antes da autorização humana.
+- [x] Validar extensão, MIME observado, assinatura de arquivo, tamanho, vazio, truncamento, macro Office, conteúdo compactado e SHA-256 sem declarar arquivo limpo ou livre de malware.
+- [x] Registrar no produto e na documentação que documentos são conteúdo não confiável para qualquer futura integração de IA.
+- [x] Aplicar rate limiting distribuído por grupo de rota com limites para API, autenticação, upload, IA, rotas públicas sensíveis e operações administrativas.
+- [x] Definir e testar contingência do rate limiter por criticidade, sem fail-open global e com alerta técnico auditável na indisponibilidade do banco.
+- [x] Implementar limpeza periódica idempotente de buckets expirados por callback autenticado de agendamento.
+- [x] Separar autorizações humanas de processamento, download e disponibilidade comum para cada evidência em quarentena.
+- [x] Registrar autorização de evidência com responsável, data, justificativa, estados anterior/novo e identificador de evento.
+- [x] Ampliar validação DOCX/XLSX contra estrutura ZIP incompatível, macro, path traversal, compressão anormal e relações externas inesperadas.
+- [x] Verificar divergência de SHA-256 antes de processamento e bloquear a evidência até nova validação quando houver alteração.
+- [x] Formalizar e testar a fronteira UNTRUSTED_DOCUMENT_CONTENT para futuras integrações de IA, sem privilégios administrativos ou de decisão humana.
+- [x] Criar interface operacional de LGPD para solicitações de titulares, estados de atendimento, responsáveis, fundamentos, evidências e trilha de auditoria.
+- [x] Exibir e versionar políticas de retenção por organização, com categoria, período, justificativa, responsável, aprovação e alterações.
+- [x] Atualizar o Trust Center com estado real por controle e sem alegar certificações, SLA, pentest, antivírus ou RPO/RTO inexistentes.
+- [x] Criar checklist reutilizável de ativação de piloto com contrato, DPA, finalidade, dados proibidos, retenção, incidentes, restauração, escopo, encerramento e devolução de dados.
+- [x] Ajustar a métrica de cobertura para incluir explicação verificável de cálculo e sua fonte de dados.
+- [x] Executar o pacote de hardening em fases, validando testes, riscos, critérios de aceite e documentação ao término de cada camada antes da publicação final.

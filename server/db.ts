@@ -1,9 +1,13 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   auditEvents,
   capaActions,
   conditions,
+  dataRetentionPolicies,
+  dataRetentionPolicyVersions,
+  dataSubjectRequestEvents,
+  dataSubjectRequests,
   evidences,
   esgMetrics,
   incidents,
@@ -27,6 +31,7 @@ import {
   requirementSourceConflicts,
   requirements,
   requirementVersions,
+  rateLimitBuckets,
   reviewRequests,
   sectorProfiles,
   sites,
@@ -40,6 +45,26 @@ let database: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!database && process.env.DATABASE_URL) database = drizzle(process.env.DATABASE_URL);
   return database;
+}
+
+/** Consome um bucket durável em uma operação atômica compartilhada entre instâncias. */
+export async function consumeRateLimitBucket(input: { bucketKey: string; scope: string; windowMs: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de rate limiting indisponível");
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + input.windowMs);
+  await db.execute(sql`INSERT INTO rateLimitBuckets (bucketKey, scope, windowStart, requestCount, expiresAt) VALUES (${input.bucketKey}, ${input.scope}, ${now}, 1, ${expiresAt}) ON DUPLICATE KEY UPDATE requestCount = IF(expiresAt <= ${now}, 1, requestCount + 1), windowStart = IF(expiresAt <= ${now}, ${now}, windowStart), expiresAt = IF(expiresAt <= ${now}, ${expiresAt}, expiresAt)`);
+  const rows = await db.execute(sql`SELECT requestCount, expiresAt FROM rateLimitBuckets WHERE bucketKey = ${input.bucketKey} LIMIT 1`);
+  const row = (rows as unknown as [{ requestCount: number; expiresAt: Date }[]])[0]?.[0];
+  if (!row) throw new Error("Bucket de rate limiting não encontrado após incremento");
+  return { requestCount: Number(row.requestCount), expiresAt: new Date(row.expiresAt) };
+}
+
+export async function cleanupExpiredRateLimitBuckets(now = new Date()) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de rate limiting indisponível");
+  const result = await db.delete(rateLimitBuckets).where(sql`${rateLimitBuckets.expiresAt} < ${now}`);
+  return Number(result[0].affectedRows ?? 0);
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
@@ -338,7 +363,10 @@ export async function linkEvidenceToObligation(input: typeof obligationEvidenceL
   const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
   const obligation = (await db.select().from(obligationInstances).where(and(eq(obligationInstances.id, input.obligationId), eq(obligationInstances.organizationId, input.organizationId))).limit(1))[0];
   if (!obligation) throw new Error("A obrigação não pertence à organização atual.");
-  await getEvidenceForOrganization(input.evidenceId, input.organizationId);
+  const evidence = await getEvidenceForOrganization(input.evidenceId, input.organizationId);
+  if (evidence.quarantineStatus !== "approved_for_processing" || evidence.reviewStatus !== "verificada" || evidence.structuralValidationStatus !== "aprovada") {
+    throw new Error("A evidência permanece em quarentena ou sem autorização humana e não pode ser vinculada como comprovante.");
+  }
   const linkId = Number((await db.insert(obligationEvidenceLinks).values(input))[0].insertId);
   await syncObligationEvidenceStatus(input.obligationId, input.organizationId);
   return linkId;
@@ -392,6 +420,19 @@ export async function createCapaAction(input: typeof capaActions.$inferInsert) {
 export async function createIncident(input: typeof incidents.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(incidents).values(input))[0].insertId); }
 export async function createEsgMetric(input: typeof esgMetrics.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(esgMetrics).values(input).onDuplicateKeyUpdate({ set: { value: input.value, target: input.target, unit: input.unit, sourceDescription: input.sourceDescription, status: input.status } }))[0].insertId); }
 export async function createEvidence(input: typeof evidences.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(evidences).values(input))[0].insertId); }
+export async function getDataGovernanceOverview(organizationId: number) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); const [policies, requests, policyVersions, requestEvents] = await Promise.all([db.select().from(dataRetentionPolicies).where(eq(dataRetentionPolicies.organizationId, organizationId)), db.select().from(dataSubjectRequests).where(eq(dataSubjectRequests.organizationId, organizationId)).orderBy(desc(dataSubjectRequests.createdAt)), db.select().from(dataRetentionPolicyVersions).where(eq(dataRetentionPolicyVersions.organizationId, organizationId)).orderBy(desc(dataRetentionPolicyVersions.recordedAt)), db.select().from(dataSubjectRequestEvents).where(eq(dataSubjectRequestEvents.organizationId, organizationId)).orderBy(desc(dataSubjectRequestEvents.createdAt))]); return { policies, requests, policyVersions, requestEvents }; }
+export async function upsertRetentionPolicy(input: typeof dataRetentionPolicies.$inferInsert & { recordedByUserId: number }) {
+  const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
+  await db.insert(dataRetentionPolicies).values(input).onDuplicateKeyUpdate({ set: { retentionDays: input.retentionDays, legalBasisNote: input.legalBasisNote, disposalMethod: input.disposalMethod, status: input.status, approvedByUserId: input.approvedByUserId, approvedAt: input.approvedAt } });
+  const policy = (await db.select().from(dataRetentionPolicies).where(and(eq(dataRetentionPolicies.organizationId, input.organizationId), eq(dataRetentionPolicies.dataCategory, input.dataCategory))).limit(1))[0];
+  if (!policy) throw new Error("A política de retenção não foi encontrada após a atualização.");
+  const latestVersion = (await db.select({ versionNumber: dataRetentionPolicyVersions.versionNumber }).from(dataRetentionPolicyVersions).where(eq(dataRetentionPolicyVersions.policyId, policy.id)).orderBy(desc(dataRetentionPolicyVersions.versionNumber)).limit(1))[0];
+  await db.insert(dataRetentionPolicyVersions).values({ policyId: policy.id, organizationId: input.organizationId, versionNumber: (latestVersion?.versionNumber ?? 0) + 1, dataCategory: policy.dataCategory, retentionDays: policy.retentionDays, legalBasisNote: policy.legalBasisNote, disposalMethod: policy.disposalMethod, status: policy.status, recordedByUserId: input.recordedByUserId });
+  return policy;
+}
+export async function createDataSubjectRequest(input: typeof dataSubjectRequests.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); return Number((await db.insert(dataSubjectRequests).values(input))[0].insertId); }
+export async function recordDataSubjectRequestEvent(input: typeof dataSubjectRequestEvents.$inferInsert) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); const request = (await db.select({ id: dataSubjectRequests.id }).from(dataSubjectRequests).where(and(eq(dataSubjectRequests.id, input.requestId), eq(dataSubjectRequests.organizationId, input.organizationId))).limit(1))[0]; if (!request) throw new Error("Pedido LGPD não encontrado na organização atual."); return Number((await db.insert(dataSubjectRequestEvents).values(input))[0].insertId); }
+export async function handleDataSubjectRequest(input: { requestId: number; organizationId: number; handledByUserId: number; status: "em_revisao" | "aguardando_controlador" | "atendida" | "recusada" | "cancelada"; decisionRationale: string }) { const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível"); const result = await db.update(dataSubjectRequests).set({ status: input.status, decisionRationale: input.decisionRationale, handledByUserId: input.handledByUserId, handledAt: new Date() }).where(and(eq(dataSubjectRequests.id, input.requestId), eq(dataSubjectRequests.organizationId, input.organizationId))); if (result[0].affectedRows !== 1) throw new Error("Pedido LGPD não encontrado na organização atual."); return (await db.select().from(dataSubjectRequests).where(eq(dataSubjectRequests.id, input.requestId)).limit(1))[0]; }
 export async function getEvidenceForOrganization(evidenceId: number, organizationId: number) {
   const db = await getDb();
   if (!db) throw new Error("Banco de dados indisponível");
@@ -399,6 +440,36 @@ export async function getEvidenceForOrganization(evidenceId: number, organizatio
   if (!evidence) throw new Error("A evidência não pertence à organização atual.");
   return evidence;
 }
+
+export async function authorizeEvidenceAccess(input: { evidenceId: number; organizationId: number; authorizedByUserId: number; authorization: "processing" | "download"; note: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const evidence = await getEvidenceForOrganization(input.evidenceId, input.organizationId);
+  if (evidence.reviewStatus !== "verificada" || evidence.structuralValidationStatus !== "aprovada") {
+    throw new Error("A evidência exige revisão humana aprovada e validação estrutural antes de qualquer autorização.");
+  }
+  if (evidence.quarantineStatus === "blocked") throw new Error("Evidência bloqueada não pode ser autorizada.");
+  if (input.authorization === "download" && evidence.quarantineStatus !== "approved_for_processing") {
+    throw new Error("A autorização de download exige autorização prévia de processamento.");
+  }
+  const now = new Date();
+  if (input.authorization === "processing") {
+    await db.update(evidences).set({ quarantineStatus: "approved_for_processing", processingAuthorizedByUserId: input.authorizedByUserId, processingAuthorizedAt: now, quarantineNote: input.note }).where(and(eq(evidences.id, input.evidenceId), eq(evidences.organizationId, input.organizationId)));
+  } else {
+    await db.update(evidences).set({ downloadAuthorizedByUserId: input.authorizedByUserId, downloadAuthorizedAt: now, downloadAuthorizationNote: input.note }).where(and(eq(evidences.id, input.evidenceId), eq(evidences.organizationId, input.organizationId)));
+  }
+  return getEvidenceForOrganization(input.evidenceId, input.organizationId);
+}
+
+/** Bloqueio conservador: um arquivo cuja integridade divergiu não pode voltar ao fluxo sem novo upload e revisão. */
+export async function blockEvidenceForIntegrityMismatch(input: { evidenceId: number; organizationId: number; note: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Banco de dados indisponível");
+  const result = await db.update(evidences).set({ quarantineStatus: "blocked", structuralValidationStatus: "rejeitada", quarantineNote: input.note }).where(and(eq(evidences.id, input.evidenceId), eq(evidences.organizationId, input.organizationId)));
+  if (result[0].affectedRows !== 1) throw new Error("A evidência não pertence à organização atual.");
+  return getEvidenceForOrganization(input.evidenceId, input.organizationId);
+}
+
 export async function createAuditEvent(input: typeof auditEvents.$inferInsert) {
   const db = await getDb();
   if (!db) throw new Error("Banco de dados indisponível");

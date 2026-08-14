@@ -47,4 +47,17 @@ describe("marketing positioning", () => {
     expect(useCases).toContain("planos de ação");
     expect(useCases).not.toContain("Atribua CAPAs");
   });
+
+  it("separates ESG from GIS and keeps the pilot scope and coverage metric explicit", () => {
+    const home = source("client/src/pages/Home.tsx");
+    const product = source("client/src/pages/Product.tsx");
+    const pilot = source("client/src/pages/PilotTelecom.tsx");
+    expect(product).toContain("Indicadores ambientais e ESG");
+    expect(product).toContain("Território e GIS");
+    expect(product).not.toContain("Indicadores ambientais, ESG e GIS");
+    expect(pilot).toContain("Até 50 sites, ajustado conforme disponibilidade e objetivo do piloto");
+    expect(pilot).toContain("Como calculamos: documentos e itens com registro, fonte e revisão");
+    expect(home).toContain("Como calculamos?");
+    expect(home).toContain("Prévia ilustrativa: itens aplicáveis com documento, fonte e revisão registrados");
+  });
 });

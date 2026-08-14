@@ -93,6 +93,7 @@ export default function Home() {
               <div className="panel-title-row"><div><p className="panel-kicker">Centro logístico · SP</p><h2>Prontidão documental</h2></div><span className="score score--attention">Atenção</span></div>
               <div className="panel-progress"><span style={{ width: "72%" }} /></div>
               <div className="panel-meta"><span>72% de cobertura documental</span><span>3 pendências críticas</span></div>
+              <details className="panel-metric-method"><summary>Como calculamos?</summary><p>Prévia ilustrativa: itens aplicáveis com documento, fonte e revisão registrados, divididos pelo conjunto aplicável definido para aquele recorte. O percentual não representa dado de cliente nem comparação entre organizações.</p></details>
               <div className="evidence-list">
                 {evidenceRows.map((row) => {
                   const Icon = row.icon;

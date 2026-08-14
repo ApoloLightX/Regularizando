@@ -21,6 +21,7 @@ import Security from "./pages/Security";
 import Sources from "./pages/Sources";
 import Leads from "./pages/Leads";
 import PublicValidation from "./pages/PublicValidation";
+import DataGovernance from "./pages/DataGovernance";
 import MarketingFooter from "./components/MarketingFooter";
 
 function Router() {
@@ -39,6 +40,7 @@ function Router() {
       <Route path={"/fontes"} component={Sources} />
       <Route path={"/equipe"} component={Team} />
       <Route path={"/leads"} component={Leads} />
+      <Route path={"/governanca-lgpd"} component={DataGovernance} />
       <Route path={"/validacao-tecnica"} component={PublicValidation} />
       <Route path={"/convites/:token"} component={InviteAccept} />
       <Route path={"/contato"} component={Contact} />
