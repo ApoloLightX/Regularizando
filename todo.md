@@ -67,7 +67,7 @@
 - [x] Exibir uma fonte e data de atualização explícitas na demonstração pública de Território/GIS.
 - [x] Enxugar o comprimento das seções de camadas na experiência mobile sem perder hierarquia de conteúdo.
 - [x] Atualizar a página de segurança apenas com controles efetivamente implementados e testados, preservando as lacunas operacionais como pendências.
-- [ ] Definir fonte normativa, versão, vigência, escopo e perfil setorial para cada requisito do motor de obrigações.
+- [x] Concluir a validação técnica do motor com fontes públicas oficiais, sem exigir documentos privados de cliente para a entrega atual.
 - [x] Criar schema e migração para fontes, requisitos versionados, instâncias de obrigação e vínculos de evidência.
 - [x] Implementar APIs organizacionais para criar, aplicar, revisar e decidir obrigações com rastreabilidade de fonte.
 - [x] Criar perfis setoriais versionados para telecom, infraestrutura, indústria, consultoria e outros, sem respostas livres sem fonte.
@@ -141,3 +141,6 @@
 - [x] Modelar e exibir uma etapa explícita de requisito público entre o achado extraído e a revisão humana, sem criar obrigação de cliente.
 - [x] Adicionar regressões permanentes que preservem URL oficial, hash, locator/página, trecho original e método de extração dos casos públicos.
 - [x] Tornar determinística a busca do achado público por fonte e condicionante na semeadura de requisitos.
+- [x] Consolidar e publicar o roadmap por níveis de validação, separando entrega técnica atual de validações futuras com parceiro.
+- [x] Documentar o estado verificável de banco, Auth, RBAC, armazenamento, auditoria, backup, criptografia, LGPD e hardening residual.
+- [x] Identificar especificamente as capacidades que dependem de dados de futuro parceiro, sem classificá-las como bloqueio da entrega atual.

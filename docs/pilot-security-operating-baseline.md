@@ -1,14 +1,16 @@
 # Baseline operacional de segurança — piloto Regularizando
 
+> Este baseline é um **gate operacional para os níveis B e C** — uso de ativo real e piloto comercial. Ele **não é uma pendência do Nível A**, cuja validação técnica com fontes públicas oficiais está concluída. A classificação formal está em `docs/validation-roadmap-status.md`.
+
 O piloto usa **OAuth Manus** como fonte de identidade. A aplicação não deve declarar MFA, verificação de e-mail, retenção de sessão, revogação ou recuperação de acesso como capacidades próprias sem confirmação formal do provedor. Antes de cada organização entrar com dados reais, o responsável pelo piloto registra essa confirmação e designa o administrador organizacional.
 
 Enquanto este baseline estiver vigente, o piloto é **privado**: somente o administrador do projeto cria uma organização, e os demais participantes entram mediante convite emitido por um administrador da própria organização. Não há autoatendimento para criar novos espaços de trabalho.
 
 Na configuração de projeto disponível para esta revisão não há conector ou parâmetro de OAuth que comprove MFA ou verificação de e-mail. Portanto, esses itens continuam como pré-requisitos externos, e não como controles declarados pelo produto.
 
-## Gate de liberação de dados reais
+## Gate de ativação de dados reais
 
-Enquanto não houver confirmação formal do provedor sobre MFA e verificação de e-mail, o Regularizando não deve receber dados reais de clientes fora do piloto privado. O acesso permanece limitado ao administrador do projeto e a participantes convidados. Qualquer abertura de autoatendimento, criação autônoma de organizações ou expansão para dados reais exige uma nova revisão de identidade, aprovação do responsável pelo tratamento e atualização deste baseline.
+Enquanto não houver confirmação formal do provedor sobre MFA e verificação de e-mail, o Regularizando não deve receber dados reais de clientes fora do piloto privado. O acesso permanece limitado ao administrador do projeto e a participantes convidados. Qualquer abertura de autoatendimento, criação autônoma de organizações ou expansão para dados reais exige uma nova revisão de identidade, aprovação do responsável pelo tratamento e atualização deste baseline. Esta condição não bloqueia demonstrações técnicas ou a entrega atual sem dados privados.
 
 | Controle | Regra de entrada do piloto | Evidência exigida |
 |---|---|---|

@@ -4,6 +4,8 @@
 **Escopo:** código do servidor, rotas tRPC, autenticação da plataforma, modelagem multi-tenant e fluxo de evidências.  
 **Limite da avaliação:** esta é uma revisão de implementação e arquitetura; não comprova configurações do provedor, criptografia de infraestrutura, backups administrados ou a conformidade jurídica da operação.
 
+> **Atualização de estado — 14 de agosto de 2026:** este parecer preserva o diagnóstico histórico que orientou o hardening. As lacunas P0 de download autorizado de evidências, testes negativos cross-tenant, auditoria append-only e rate limiting foram implementadas posteriormente e verificadas na suíte atual. Backup/restore, retenção LGPD, identidade do provedor, criptografia de infraestrutura, antivírus/quarentena e monitoramento contínuo continuam pendências operacionais externas. Para o estado consolidado, consulte `docs/validation-roadmap-status.md`.
+
 ## Conclusão executiva
 
 O feedback recebido está **correto na direção**: a plataforma não deve ser apresentada como pronta para receber dados reais de clientes sem uma fase explícita de hardening. Porém, sua recomendação técnica precisa ser adaptada à arquitetura real do Regularizando. O produto não usa Supabase/Postgres: utiliza **MySQL/TiDB, Express/tRPC, OAuth Manus e S3 gerenciado**. Por isso, RLS do PostgreSQL não é um controle disponível; o isolamento deve ser defendido no servidor, por consultas obrigatoriamente escopadas, autorização centralizada, testes negativos de tenant e uma credencial de banco com privilégios mínimos.

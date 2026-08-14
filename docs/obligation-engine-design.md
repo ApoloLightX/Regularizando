@@ -8,7 +8,7 @@ Uma fonte normativa precisa registrar URL, emissor, identificador, publicação,
 
 ## Fontes iniciais elegíveis
 
-O catálogo não será pré-preenchido com obrigações genéricas para clientes. A equipe do piloto cadastra apenas documentos reais, por organização e contexto de implantação, com revisão humana. As primeiras fontes oficiais elegíveis são organizadas abaixo.
+O catálogo não será pré-preenchido com obrigações genéricas para clientes. Para organizações, a equipe cadastra documentos autorizados e contextualizados, com revisão humana. Em paralelo, o Nível A usa um domínio global segregado de validação pública (`publicValidationCases`, fontes, achados e requisitos públicos) para demonstrar extração e rastreabilidade sem criar obrigação de cliente. Essa validação pública está concluída e não substitui a confirmação de aplicabilidade de uma organização futura. As primeiras fontes oficiais elegíveis são organizadas abaixo.
 
 | Fonte | Papel no motor | Limite de uso |
 |---|---|---|
@@ -39,7 +39,7 @@ O fluxo de análise deve sempre devolver quatro sinais estruturados: `status_da_
 
 ## Recorte inicial do piloto
 
-O primeiro recorte é telecom e infraestrutura distribuída, sem criar um conjunto artificial de obrigações. O administrador cadastra uma fonte documental real — por exemplo, uma licença ou condicionante de um site aprovado para o piloto — e o revisor transforma apenas esse conteúdo em uma versão de requisito. A aplicação da obrigação exige seleção explícita de organização, ativo ou licença, prazo e responsável.
+O primeiro recorte é telecom e infraestrutura distribuída, sem criar um conjunto artificial de obrigações. A validação técnica pública já confirma a cadeia documental e os controles do motor; uma futura organização parceira poderá cadastrar fonte documental autorizada — por exemplo, licença ou condicionante de site aprovado — para que o revisor transforme apenas esse conteúdo em uma versão organizacional de requisito. A aplicação da obrigação exige seleção explícita de organização, ativo ou licença, prazo e responsável. Essa fase é futura e não bloqueia a entrega atual.
 
 ## Referências
 
