@@ -48,16 +48,26 @@ function inspectOfficeZip(bytes: Buffer) {
     const name = bytes.subarray(index + 46, index + 46 + fileNameLength).toString("utf8");
     if (!name || name.includes("\0") || name.startsWith("/") || /^[a-zA-Z]:/.test(name) || name.split("/").includes("..") || name.includes("\\")) throw new Error("A estrutura compactada do documento contém caminho incompatível.");
     if (name.toLowerCase().endsWith("vbaproject.bin")) throw new Error("Documentos Office com macro não são permitidos.");
+    if (localOffset + 30 > bytes.length || !bytes.subarray(localOffset, localOffset + 4).equals(localHeader)) throw new Error("A estrutura ZIP do documento está truncada.");
+    const localFlags = bytes.readUInt16LE(localOffset + 6);
+    const localMethod = bytes.readUInt16LE(localOffset + 8);
+    const localNameLength = bytes.readUInt16LE(localOffset + 26);
+    const localExtraLength = bytes.readUInt16LE(localOffset + 28);
+    const localNameEnd = localOffset + 30 + localNameLength;
+    const dataStart = localNameEnd + localExtraLength;
+    const dataEnd = dataStart + compressedSize;
+    if (localNameEnd > bytes.length || dataEnd > bytes.length || localFlags !== flags || localMethod !== method || !bytes.subarray(localOffset + 30, localNameEnd).equals(Buffer.from(name))) {
+      throw new Error("A estrutura ZIP do documento está truncada ou incompatível.");
+    }
     names.push(name);
     if (name.toLowerCase().endsWith(".rels")) {
-      if (localOffset + 30 > bytes.length || !bytes.subarray(localOffset, localOffset + 4).equals(localHeader)) throw new Error("A estrutura ZIP do documento está truncada.");
-      const localNameLength = bytes.readUInt16LE(localOffset + 26);
-      const localExtraLength = bytes.readUInt16LE(localOffset + 28);
-      const dataStart = localOffset + 30 + localNameLength + localExtraLength;
-      const dataEnd = dataStart + compressedSize;
-      if (dataEnd > bytes.length) throw new Error("A estrutura ZIP do documento está truncada.");
       const raw = bytes.subarray(dataStart, dataEnd);
-      const relationXml = method === 8 ? inflateRawSync(raw).toString("utf8") : raw.toString("utf8");
+      let relationXml: string;
+      try {
+        relationXml = method === 8 ? inflateRawSync(raw, { maxOutputLength: 512 * 1024 }).toString("utf8") : raw.toString("utf8");
+      } catch {
+        throw new Error("A relação Office não pôde ser validada dentro do limite estrutural permitido.");
+      }
       if (/targetmode\s*=\s*["']external["']/i.test(relationXml)) throw new Error("Documentos Office com relações externas não são permitidos.");
     }
     entries += 1;

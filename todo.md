@@ -171,3 +171,5 @@
 - [x] Criar checklist reutilizável de ativação de piloto com contrato, DPA, finalidade, dados proibidos, retenção, incidentes, restauração, escopo, encerramento e devolução de dados.
 - [x] Ajustar a métrica de cobertura para incluir explicação verificável de cálculo e sua fonte de dados.
 - [x] Executar o pacote de hardening em fases, validando testes, riscos, critérios de aceite e documentação ao término de cada camada antes da publicação final.
+- [x] Implementar e validar a suíte adversarial obrigatória de isolamento, upload, quarentena, integridade, rate limit, fronteira de IA e LGPD antes da sincronização final.
+- [x] Documentar o escopo, os resultados, as limitações e a evidência de verificação do hardening final.
