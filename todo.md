@@ -180,7 +180,7 @@
 - [x] Atualizar a prova técnica pública e o posicionamento institucional sem inventar clientes, depoimentos, certificações ou métricas.
 - [x] Validar acessibilidade estrutural, typecheck, testes e build após as alterações; as rotas públicas responderam HTTP 200 no ambiente de desenvolvimento.
 - [ ] [Pendente operacional — não bloqueia RC técnica] Confirmar visualmente desktop e mobile quando o subsistema de navegador voltar a capturar telas, pois a captura automatizada falhou no ambiente atual.
-- [ ] Publicar e sincronizar as alterações, documentando que domínio próprio e retirada da marca da plataforma dependem de configuração externa do proprietário.
+- [x] Publicar e sincronizar as alterações, documentando que domínio próprio e retirada da marca da plataforma dependem de configuração externa do proprietário.
 - [x] Auditar e classificar o estado da Release Candidate entre implementado, testado, parcial, externo, futuro piloto e revisão jurídica.
 - [x] Publicar Aviso de Privacidade operacional com Gabriel Apolo Leal Rocha como pessoa física responsável pelo projeto e canal LGPD no formulário de contato.
 - [x] Mapear finalidades de tratamento e registrar bases legais como pendentes de revisão jurídica quando não puderem ser comprovadas.
