@@ -173,3 +173,19 @@
 - [x] Executar o pacote de hardening em fases, validando testes, riscos, critérios de aceite e documentação ao término de cada camada antes da publicação final.
 - [x] Implementar e validar a suíte adversarial obrigatória de isolamento, upload, quarentena, integridade, rate limit, fronteira de IA e LGPD antes da sincronização final.
 - [x] Documentar o escopo, os resultados, as limitações e a evidência de verificação do hardening final.
+- [x] Auditar a versão pública atual contra o parecer externo e registrar apenas divergências ainda existentes.
+- [x] Criar Aviso de Privacidade revisável e vincular o formulário de contato à finalidade, ao consentimento e ao aviso.
+- [x] Corrigir a narrativa da demonstração para um único contexto setorial coerente, sem apresentar dados de cliente como reais.
+- [ ] [Próxima fase — não bloqueia RC] Definir e aplicar a identidade visual Rastro com símbolo responsivo, wordmark, favicon, versão monocromática e sistema gráfico derivado da rastreabilidade.
+- [x] Atualizar a prova técnica pública e o posicionamento institucional sem inventar clientes, depoimentos, certificações ou métricas.
+- [x] Validar acessibilidade estrutural, typecheck, testes e build após as alterações; as rotas públicas responderam HTTP 200 no ambiente de desenvolvimento.
+- [ ] [Pendente operacional — não bloqueia RC técnica] Confirmar visualmente desktop e mobile quando o subsistema de navegador voltar a capturar telas, pois a captura automatizada falhou no ambiente atual.
+- [ ] Publicar e sincronizar as alterações, documentando que domínio próprio e retirada da marca da plataforma dependem de configuração externa do proprietário.
+- [x] Auditar e classificar o estado da Release Candidate entre implementado, testado, parcial, externo, futuro piloto e revisão jurídica.
+- [x] Publicar Aviso de Privacidade operacional com Gabriel Apolo Leal Rocha como pessoa física responsável pelo projeto e canal LGPD no formulário de contato.
+- [x] Mapear finalidades de tratamento e registrar bases legais como pendentes de revisão jurídica quando não puderem ser comprovadas.
+- [x] Confirmar que a interface LGPD cobre abertura, acompanhamento, atribuição, decisão, execução, encerramento e audit trail sem exclusão automática.
+- [x] Separar no backlog as pendências de domínio, badge da plataforma, identidade visual, futuro parceiro e benchmark de IA como não bloqueadoras da Release Candidate.
+- [x] Corrigir a demonstração pública para o universo coerente de Portfólio Telecom · SP e explicitar numerador e denominador da cobertura documental ilustrativa.
+- [x] Revisar e ampliar as evidências de rate limit, quarentena, signed URL, RBAC, continuidade e auditoria conforme a matriz adversarial da Release Candidate.
+- [x] Produzir o relatório final estruturado da Release Candidate pré-piloto, com limitações e prontidão separada para desenvolvimento, demonstração, piloto controlado e enterprise.

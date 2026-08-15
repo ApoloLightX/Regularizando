@@ -22,6 +22,8 @@ describe("LGPD governance interface", () => {
     expect(page).toContain("Nenhuma exclusão automática");
     expect(page).toContain("revisão humana");
     expect(page).toContain("referência pseudonimizada");
+    expect(page).toContain("Baseline da plataforma e política da organização");
+    expect(page).toContain("Exige revisão jurídica antes de clientes");
   });
 
   it("records immutable policy snapshots whenever a retention policy is updated", () => {

@@ -22,11 +22,12 @@ import Sources from "./pages/Sources";
 import Leads from "./pages/Leads";
 import PublicValidation from "./pages/PublicValidation";
 import DataGovernance from "./pages/DataGovernance";
+import PrivacyNotice from "./pages/PrivacyNotice";
 import MarketingFooter from "./components/MarketingFooter";
 
 function Router() {
   const [location] = useLocation();
-  const appendFooter = ["/casos-de-uso", "/piloto-telecom", "/seguranca", "/contato"].includes(location);
+  const appendFooter = ["/casos-de-uso", "/piloto-telecom", "/seguranca", "/contato", "/aviso-de-privacidade"].includes(location);
   return (
     <><Switch>
       <Route path={"/"} component={Home} />
@@ -45,6 +46,7 @@ function Router() {
       <Route path={"/convites/:token"} component={InviteAccept} />
       <Route path={"/contato"} component={Contact} />
       <Route path={"/seguranca"} component={Security} />
+      <Route path={"/aviso-de-privacidade"} component={PrivacyNotice} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

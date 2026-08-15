@@ -38,6 +38,11 @@ const publicPages: Record<string, SiteMeta> = {
     description: "Conheça os controles de acesso, rastreabilidade e revisão humana disponíveis no Regularizando.",
     canonicalPath: "/seguranca",
   },
+  "/aviso-de-privacidade": {
+    title: "Aviso de Privacidade | Regularizando",
+    description: "Saiba quais dados são utilizados, para quais finalidades e como solicitar direitos de privacidade no Regularizando.",
+    canonicalPath: "/aviso-de-privacidade",
+  },
 };
 
 export function isPrivatePath(path: string) {

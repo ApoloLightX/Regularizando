@@ -3,13 +3,13 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const projectRoot = path.resolve(import.meta.dirname, "..");
-const publicPages = ["Home.tsx", "Product.tsx", "UseCases.tsx", "PilotTelecom.tsx", "Security.tsx"];
+const publicPages = ["Home.tsx", "Product.tsx", "UseCases.tsx", "PilotTelecom.tsx", "Security.tsx", "PrivacyNotice.tsx"];
 
 describe("public accessibility baseline", () => {
   it("provides a main landmark and one primary heading in each public route", () => {
     for (const page of publicPages) {
       const source = fs.readFileSync(path.join(projectRoot, "client", "src", "pages", page), "utf8");
-      expect(source, `${page} needs a main landmark`).toContain("<main>");
+      expect(source, `${page} needs a main landmark`).toMatch(/<main\b/);
       expect(source, `${page} needs a primary heading`).toMatch(/<h1\b/);
     }
   });
@@ -41,6 +41,20 @@ describe("public accessibility baseline", () => {
     expect(source).toContain('role="alert"');
     expect(source).toContain('role="status"');
     expect(source).toContain("consent");
+    expect(source).toContain("/aviso-de-privacidade");
+    expect(source).toContain("Privacidade e dados pessoais / LGPD");
+  });
+
+  it("keeps the privacy notice visible in public navigation with controller, channel and legal-review limits", () => {
+    const page = fs.readFileSync(path.join(projectRoot, "client", "src", "pages", "PrivacyNotice.tsx"), "utf8");
+    const footer = fs.readFileSync(path.join(projectRoot, "client", "src", "components", "MarketingFooter.tsx"), "utf8");
+    const routes = fs.readFileSync(path.join(projectRoot, "client", "src", "App.tsx"), "utf8");
+    const privacy = fs.readFileSync(path.join(projectRoot, "shared", "privacy.ts"), "utf8");
+    expect(privacy).toContain("Gabriel Apolo Leal Rocha");
+    expect(page).toContain("Revisão jurídica pendente antes de clientes");
+    expect(page).toContain("Não vendemos dados pessoais.");
+    expect(footer).toContain('href="/aviso-de-privacidade"');
+    expect(routes).toContain('path={"/aviso-de-privacidade"}');
   });
 
   it("keeps public CTAs keyboard-focusable and primary text colors above normal-text contrast", () => {

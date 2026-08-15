@@ -8,6 +8,7 @@ describe("site metadata", () => {
     expect(getSiteMeta("/casos-de-uso").title).toContain("Telecom");
     expect(getSiteMeta("/piloto-telecom").title).toContain("Piloto");
     expect(getSiteMeta("/seguranca").canonicalPath).toBe("/seguranca");
+    expect(getSiteMeta("/aviso-de-privacidade").canonicalPath).toBe("/aviso-de-privacidade");
   });
 
   it("keeps private surfaces out of search indexes and responds correctly to unknown paths", () => {

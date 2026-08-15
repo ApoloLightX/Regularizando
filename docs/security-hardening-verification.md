@@ -46,6 +46,8 @@ O build exibiu dois avisos não bloqueantes: um asset de hero permanece resolvid
 | --- | --- | --- |
 | Sem antimalware ou sandbox de arquivo declarados | Arquivos estruturalmente válidos ainda podem conter conteúdo malicioso desconhecido. | Integrar serviço de análise antimalware/sandbox, com contrato, privacidade e operação definidos antes de dados reais. |
 | Sem certificações, pentest formal, SLA ou RPO/RTO | Não há evidência para prometer esses controles ao mercado. | Definir escopo, fornecedor, métricas e processo de evidência antes de qualquer afirmação pública. |
+| Validade temporal configurável de URL assinada não é controlada pelo código da aplicação | A URL é solicitada ao provedor somente após as autorizações; o TTL efetivo precisa ser comprovado pela configuração/documentação do provedor. | Validar a política do provedor e executar teste operacional de expiração antes de dados reais. |
+| Restauração independente ainda não foi exercitada | Não é possível afirmar recuperabilidade operacional de dados ou arquivos. | Executar teste de restauração com evidência, responsabilidade e resultado registrados antes do piloto comercial. |
 | Limites de estrutura ZIP não são análise semântica de documento | Conteúdo pode ser inadequado, enganoso ou não aplicável apesar do formato válido. | Manter revisão humana e, se houver IA futura, isolamento de instruções e fila de decisão. |
 | Rotina de remoção não executa descarte de dados | Políticas LGPD não eliminam dados automaticamente. | Decisões de descarte devem ser revisadas e autorizadas por pessoas responsáveis. |
 

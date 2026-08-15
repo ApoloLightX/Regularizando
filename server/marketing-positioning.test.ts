@@ -18,7 +18,7 @@ describe("marketing positioning", () => {
   it("avoids opaque readiness grades and unsupported confidence percentages", () => {
     const home = source("client/src/pages/Home.tsx");
     expect(home).toContain("Prontidão documental");
-    expect(home).toContain("72% de cobertura documental");
+    expect(home).toContain("72% · 18 de 25 itens documentais");
     expect(home).not.toContain('B<span>/A</span>');
     expect(home).not.toContain("Confiança</dt><dd>94%");
   });
@@ -58,6 +58,9 @@ describe("marketing positioning", () => {
     expect(pilot).toContain("Até 50 sites, ajustado conforme disponibilidade e objetivo do piloto");
     expect(pilot).toContain("Como calculamos: documentos e itens com registro, fonte e revisão");
     expect(home).toContain("Como calculamos?");
-    expect(home).toContain("Prévia ilustrativa: itens aplicáveis com documento, fonte e revisão registrados");
+    expect(home).toContain("Prévia ilustrativa: 18 de 25 itens aplicáveis com documento, fonte e revisão registrados");
+    expect(home).toContain("Portfólio Telecom · SP");
+    expect(home).toContain("Esta prévia não contém dados de cliente.");
+    expect(home).toContain("Aviso de Privacidade");
   });
 });

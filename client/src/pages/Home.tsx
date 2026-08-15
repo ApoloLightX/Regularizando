@@ -26,9 +26,9 @@ const operationalFlow = [
 ];
 
 const evidenceRows = [
-  { label: "Licença de Operação", meta: "Vence em 42 dias", tone: "warn", icon: CircleAlert },
-  { label: "Condicionante 07 / efluentes", meta: "Evidência verificada", tone: "ok", icon: FileCheck2 },
-  { label: "Inspeção de ativo / torre 18", meta: "Ação corretiva aberta", tone: "open", icon: MessageSquareText },
+  { label: "Licença ambiental · site SP-018", meta: "Vence em 42 dias", tone: "warn", icon: CircleAlert },
+  { label: "Condicionante 07 / resíduos", meta: "Evidência verificada", tone: "ok", icon: FileCheck2 },
+  { label: "Inspeção do site SP-018", meta: "Plano de ação aberto", tone: "open", icon: MessageSquareText },
 ];
 
 function AppLogo({ compact = false }: { compact?: boolean }) {
@@ -90,10 +90,10 @@ export default function Home() {
 
             <div className="hero-panel" aria-label="Prévia do painel Regularizando">
               <div className="panel-topline"><span><span className="live-dot" /> Visão do portfólio</span><span className="panel-date">12 ago 2026</span></div>
-              <div className="panel-title-row"><div><p className="panel-kicker">Centro logístico · SP</p><h2>Prontidão documental</h2></div><span className="score score--attention">Atenção</span></div>
+              <div className="panel-title-row"><div><p className="panel-kicker">Portfólio Telecom · SP</p><h2>Prontidão documental</h2></div><span className="score score--attention">Atenção</span></div>
               <div className="panel-progress"><span style={{ width: "72%" }} /></div>
-              <div className="panel-meta"><span>72% de cobertura documental</span><span>3 pendências críticas</span></div>
-              <details className="panel-metric-method"><summary>Como calculamos?</summary><p>Prévia ilustrativa: itens aplicáveis com documento, fonte e revisão registrados, divididos pelo conjunto aplicável definido para aquele recorte. O percentual não representa dado de cliente nem comparação entre organizações.</p></details>
+              <div className="panel-meta"><span>72% · 18 de 25 itens documentais</span><span>3 itens prioritários</span></div>
+              <details className="panel-metric-method"><summary>Como calculamos?</summary><p>Prévia ilustrativa: 18 de 25 itens aplicáveis com documento, fonte e revisão registrados, divididos pelo conjunto aplicável definido para este recorte de Portfólio Telecom · SP. O percentual não representa dado de cliente nem comparação entre organizações.</p></details>
               <div className="evidence-list">
                 {evidenceRows.map((row) => {
                   const Icon = row.icon;
@@ -111,15 +111,15 @@ export default function Home() {
         </section>
 
         <section className="proof-demo" id="demonstracao" aria-labelledby="proof-demo-title">
-          <div className="proof-demo__heading"><p className="eyebrow">Do documento à evidência auditável</p><h2 id="proof-demo-title">Veja a pendência antes que ela vire retrabalho.</h2><p>O produto transforma uma obrigação dispersa em uma fila clara de verificação, responsabilidade e decisão.</p></div>
+          <div className="proof-demo__heading"><p className="eyebrow">Demonstração ilustrativa · Portfólio Telecom · SP</p><h2 id="proof-demo-title">Veja a pendência antes que ela vire retrabalho.</h2><p>O produto transforma uma obrigação dispersa em uma fila clara de verificação, responsabilidade e decisão. Esta prévia não contém dados de cliente.</p></div>
           <div className="proof-demo__workspace">
             <div className="proof-demo__table" role="table" aria-label="Prévia de condicionantes ambientais">
               <div className="proof-demo__row proof-demo__row--head" role="row"><span>Condicionante</span><span>Status</span><span>Prazo</span><span>Evidência</span><span>Responsável</span></div>
-              <div className="proof-demo__row" role="row"><strong>Monitoramento hídrico</strong><span className="status-dot status-dot--warn">Atenção</span><span>17 dias</span><span>2 / 3</span><span>Marina</span></div>
-              <div className="proof-demo__row" role="row"><strong>Relatório semestral</strong><span className="status-dot status-dot--review">Em revisão</span><span>41 dias</span><span>5 / 5</span><span>Gabriel</span></div>
-              <div className="proof-demo__row" role="row"><strong>Ruído ambiental</strong><span className="status-dot status-dot--open">Pendente</span><span>8 dias</span><span>0 / 2</span><span>Carlos</span></div>
+              <div className="proof-demo__row" role="row"><strong>Renovação da licença · SP-018</strong><span className="status-dot status-dot--warn">Atenção</span><span>17 dias</span><span>2 / 3</span><span>Licenciamento</span></div>
+              <div className="proof-demo__row" role="row"><strong>Relatório de resíduos</strong><span className="status-dot status-dot--review">Em revisão</span><span>41 dias</span><span>5 / 5</span><span>Ambiental</span></div>
+              <div className="proof-demo__row" role="row"><strong>Inspeção técnica do site</strong><span className="status-dot status-dot--open">Pendente</span><span>8 dias</span><span>0 / 2</span><span>Campo</span></div>
             </div>
-            <aside className="proof-demo__finding"><span className="finding-label"><CircleAlert size={14} /> Pendência identificada</span><h3>O laudo anexado não contém o parâmetro DBO exigido pelo requisito.</h3><dl><div><dt>Fonte identificada</dt><dd>Licença ambiental · página 14</dd></div><div><dt>Evidência relacionada</dt><dd>Laudo_Efluentes_Julho.pdf</dd></div><div><dt>Status</dt><dd>Aguardando revisão técnica</dd></div></dl><Link href="/produto" className="arrow-link">Entender o fluxo verificável <ArrowRight size={16} /></Link></aside>
+            <aside className="proof-demo__finding"><span className="finding-label"><CircleAlert size={14} /> Pendência identificada</span><h3>O registro de inspeção ainda não contém a evidência exigida para concluir a condicionante.</h3><dl><div><dt>Fonte identificada</dt><dd>Licença ambiental · item ilustrativo 4.2</dd></div><div><dt>Evidência relacionada</dt><dd>Registro de inspeção do site SP-018</dd></div><div><dt>Status</dt><dd>Aguardando revisão técnica</dd></div></dl><Link href="/produto" className="arrow-link">Entender o fluxo verificável <ArrowRight size={16} /></Link></aside>
           </div>
         </section>
 
@@ -155,7 +155,7 @@ export default function Home() {
         <section className="cta-section" id="contato" aria-labelledby="cta-title"><div className="cta-map" aria-hidden="true" /><div className="cta-inner"><div className="cta-evidence"><div className="cta-evidence__top"><span>Próxima decisão</span><span>04 / 04</span></div><div className="cta-evidence__line"><span className="cta-evidence__marker"><Check size={14} /></span><div><strong>Contexto pronto para revisão</strong><small>Fontes, responsáveis e próximos passos conectados.</small></div></div><div className="cta-evidence__footer"><span className="verified-pill"><Check size={13} /> evidência verificada</span><ArrowRight size={15} /></div></div><div className="cta-copy"><p className="eyebrow eyebrow--light">Comece por uma obrigação real</p><h2 id="cta-title">Transforme sua primeira rotina em um piloto verificável.</h2><p>Selecione uma carteira de licenças, condicionantes ou sites e descubra onde estão os prazos, evidências e responsáveis que exigem atenção.</p><Link className="button button--mint" href="/contato">Solicitar piloto <ArrowRight size={17} /></Link></div></div></section>
       </main>
 
-      <footer className="site-footer"><AppLogo compact /><p>Inteligência para decisões ambientais mais confiáveis.</p><div className="footer-meta"><span>© 2026 Regularizando</span><span>Feito para EHS, ESG e engenharia ambiental</span></div></footer>
+      <footer className="site-footer"><AppLogo compact /><p>Inteligência para decisões ambientais mais confiáveis.</p><div className="footer-meta"><span>© 2026 Regularizando</span><span>Feito para EHS, ESG e engenharia ambiental</span><Link href="/aviso-de-privacidade">Aviso de Privacidade</Link></div></footer>
 
       {demoOpen && <div className="modal-backdrop" role="presentation" onClick={() => setDemoOpen(false)}><div className="demo-modal" role="dialog" aria-modal="true" aria-labelledby="demo-title" onClick={(event) => event.stopPropagation()}><button className="modal-close" type="button" aria-label="Fechar demonstração" onClick={() => setDemoOpen(false)}><X size={18} /></button><div className="modal-icon"><Radar size={20} /></div><p className="eyebrow">Demonstração guiada</p><h2 id="demo-title">Veja o Regularizando pensando junto com sua equipe.</h2><p>O caminho agora é direto: entre no dashboard, crie sua organização e cadastre o primeiro ativo ou licença.</p><button className="button button--nav button--full" type="button" onClick={() => { setDemoOpen(false); setLocation("/dashboard"); }}>Acessar o dashboard <ArrowRight size={16} /></button><button className="modal-secondary" type="button" onClick={() => setDemoOpen(false)}>Continuar explorando o site</button></div></div>}
     </div>
