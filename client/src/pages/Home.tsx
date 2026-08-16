@@ -10,7 +10,6 @@ import {
   FileCheck2,
   Menu,
   MessageSquareText,
-  Radar,
   Sparkles,
   X,
 } from "lucide-react";
@@ -48,7 +47,6 @@ export default function Home() {
     if (pendingInvite) setLocation(`/convites/${pendingInvite}`);
   }, [setLocation]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [demoOpen, setDemoOpen] = useState(false);
 
   return (
     <div className="site-shell" id="top">
@@ -83,7 +81,7 @@ export default function Home() {
               <p className="hero-lede">Centralize licenças, condicionantes, responsáveis e documentos. O Regularizando identifica pendências e organiza evidências para a revisão do profissional responsável.</p>
               <div className="hero-actions">
                 <Link className="button button--mint" href="/contato">Solicitar piloto <ArrowDownRight size={17} /></Link>
-                <button className="button button--ghost-light" type="button" onClick={() => setDemoOpen(true)}>Ver demonstração</button>
+                <Link className="button button--ghost-light" href="/demonstracao">Ver demonstração</Link>
               </div>
               <div className="hero-proof"><span><Check size={15} /> IA organiza. O profissional valida.</span><span><Check size={15} /> Cada decisão permanece rastreável.</span></div>
             </div>
@@ -156,8 +154,6 @@ export default function Home() {
       </main>
 
       <footer className="site-footer"><AppLogo compact /><p>Inteligência para decisões ambientais mais confiáveis.</p><div className="footer-meta"><span>© 2026 Regularizando</span><span>Feito para EHS, ESG e engenharia ambiental</span><Link href="/aviso-de-privacidade">Aviso de Privacidade</Link></div></footer>
-
-      {demoOpen && <div className="modal-backdrop" role="presentation" onClick={() => setDemoOpen(false)}><div className="demo-modal" role="dialog" aria-modal="true" aria-labelledby="demo-title" onClick={(event) => event.stopPropagation()}><button className="modal-close" type="button" aria-label="Fechar demonstração" onClick={() => setDemoOpen(false)}><X size={18} /></button><div className="modal-icon"><Radar size={20} /></div><p className="eyebrow">Demonstração guiada</p><h2 id="demo-title">Veja o Regularizando pensando junto com sua equipe.</h2><p>O caminho agora é direto: entre no dashboard, crie sua organização e cadastre o primeiro ativo ou licença.</p><button className="button button--nav button--full" type="button" onClick={() => { setDemoOpen(false); setLocation("/dashboard"); }}>Acessar o dashboard <ArrowRight size={16} /></button><button className="modal-secondary" type="button" onClick={() => setDemoOpen(false)}>Continuar explorando o site</button></div></div>}
     </div>
   );
 }

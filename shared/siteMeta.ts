@@ -18,6 +18,16 @@ const publicPages: Record<string, SiteMeta> = {
     description: "Licenciamento, condicionantes, evidências, operação EHS, indicadores ESG e contexto territorial em um fluxo auditável.",
     canonicalPath: "/produto",
   },
+  "/demonstracao": {
+    title: "Demonstração de gestão ambiental verificável | Regularizando",
+    description: "Acompanhe uma simulação guiada do fluxo documento, revisão humana, responsabilidade, evidência e decisão no Regularizando.",
+    canonicalPath: "/demonstracao",
+  },
+  "/implantacao-e-sucesso": {
+    title: "Implantação e Sucesso | Regularizando",
+    description: "Conheça a metodologia proposta de implantação acompanhada, rotina operacional e expansão gradual do Regularizando.",
+    canonicalPath: "/implantacao-e-sucesso",
+  },
   "/casos-de-uso": {
     title: "Regularizando para Telecom, Infraestrutura e Indústria",
     description: "Veja como equipes ambientais, EHS, ESG e auditoria usam evidências rastreáveis para reduzir riscos e retrabalho.",

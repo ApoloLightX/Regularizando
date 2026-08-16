@@ -5,6 +5,8 @@ describe("site metadata", () => {
   it("returns specific indexable metadata for every public commercial route", () => {
     expect(getSiteMeta("/").canonicalPath).toBe("/");
     expect(getSiteMeta("/produto").title).toContain("Plataforma");
+    expect(getSiteMeta("/demonstracao").canonicalPath).toBe("/demonstracao");
+    expect(getSiteMeta("/implantacao-e-sucesso").canonicalPath).toBe("/implantacao-e-sucesso");
     expect(getSiteMeta("/casos-de-uso").title).toContain("Telecom");
     expect(getSiteMeta("/piloto-telecom").title).toContain("Piloto");
     expect(getSiteMeta("/seguranca").canonicalPath).toBe("/seguranca");

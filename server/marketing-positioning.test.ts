@@ -10,9 +10,9 @@ describe("marketing positioning", () => {
     const home = source("client/src/pages/Home.tsx");
     const product = source("client/src/pages/Product.tsx");
     expect(home).toContain("obrigação, requisito, prazo, responsável, evidência, revisão e decisão");
-    expect(product).toContain("Núcleo: Licenciamento & Obrigações");
-    expect(product).toContain("Obrigação");
-    expect(product).toContain("Decisão");
+    expect(product).toContain("Licenciamento & obrigações");
+    expect(product).toContain("Fonte → requisito → prazo → responsável → evidência → revisão → decisão.");
+    expect(product).toContain("revisão humana");
   });
 
   it("avoids opaque readiness grades and unsupported confidence percentages", () => {
@@ -56,11 +56,32 @@ describe("marketing positioning", () => {
     expect(product).toContain("Território e GIS");
     expect(product).not.toContain("Indicadores ambientais, ESG e GIS");
     expect(pilot).toContain("Até 50 sites, ajustado conforme disponibilidade e objetivo do piloto");
-    expect(pilot).toContain("Como calculamos: documentos e itens com registro, fonte e revisão");
+    expect(pilot).toContain("conjunto aplicável definido no kickoff");
+    expect(pilot).toContain("Nenhuma porcentagem, tempo poupado, taxa de extração ou ganho operacional é prometido");
     expect(home).toContain("Como calculamos?");
     expect(home).toContain("Prévia ilustrativa: 18 de 25 itens aplicáveis com documento, fonte e revisão registrados");
     expect(home).toContain("Portfólio Telecom · SP");
     expect(home).toContain("Esta prévia não contém dados de cliente.");
     expect(home).toContain("Aviso de Privacidade");
+  });
+
+  it("presents implementation as a high-touch proposed lifecycle without unsupported service promises", () => {
+    const implementation = source("client/src/pages/ImplementationSuccess.tsx");
+    const routes = source("client/src/App.tsx");
+    expect(implementation).toContain("Implantação e sucesso");
+    expect(implementation).toContain("O piloto é só o começo da rotina");
+    expect(implementation).toContain("Não há prazo padrão, SLA, equipe dedicada");
+    expect(implementation).toContain("expansão não é automática nem pré-definida");
+    expect(implementation).toContain("O contato inicial não deve incluir documentos, evidências ou dados sensíveis.");
+    expect(routes).toContain('path={"/implantacao-e-sucesso"}');
+  });
+
+  it("states product maturity as implemented, pilot or roadmap without treating future scope as delivered", () => {
+    const product = source("client/src/pages/Product.tsx");
+    expect(product).toContain('state: "Implementado"');
+    expect(product).toContain('state: "Piloto"');
+    expect(product).toContain('state: "Roadmap"');
+    expect(product).toContain("Maturidade declarada, sem confundir código com resultado de cliente.");
+    expect(product).toContain("não são prometidos nesta página");
   });
 });

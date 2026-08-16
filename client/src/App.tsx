@@ -24,6 +24,8 @@ import PublicValidation from "./pages/PublicValidation";
 import DataGovernance from "./pages/DataGovernance";
 import PrivacyNotice from "./pages/PrivacyNotice";
 import BrandDirections from "./pages/BrandDirections";
+import Demo from "./pages/Demo";
+import ImplementationSuccess from "./pages/ImplementationSuccess";
 import MarketingFooter from "./components/MarketingFooter";
 
 function Router() {
@@ -33,6 +35,8 @@ function Router() {
     <><Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/produto"} component={Product} />
+      <Route path={"/demonstracao"} component={Demo} />
+      <Route path={"/implantacao-e-sucesso"} component={ImplementationSuccess} />
       <Route path={"/casos-de-uso"} component={UseCases} />
       <Route path={"/piloto-telecom"} component={PilotTelecom} />
       <Route path={"/dashboard"} component={Dashboard} />

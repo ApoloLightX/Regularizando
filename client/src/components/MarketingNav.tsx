@@ -17,9 +17,11 @@ export default function MarketingNav() {
         <button className="menu-toggle marketing-menu" type="button" aria-label={open ? "Fechar menu" : "Abrir menu"} onClick={() => setOpen((value) => !value)}>{open ? <X size={20} /> : <Menu size={20} />}</button>
         <nav className={`marketing-nav ${open ? "marketing-nav--open" : ""}`} aria-label="Navegação principal">
           <Link href="/produto" onClick={() => setOpen(false)}>Produto</Link>
+          <Link href="/demonstracao" onClick={() => setOpen(false)}>Demonstração</Link>
           <Link href="/casos-de-uso" onClick={() => setOpen(false)}>Casos de uso</Link>
           <Link href="/seguranca" onClick={() => setOpen(false)}>Segurança</Link>
           <Link href="/piloto-telecom" onClick={() => setOpen(false)}>Piloto telecom</Link>
+          <Link href="/implantacao-e-sucesso" onClick={() => setOpen(false)}>Implantação</Link>
           <Link href="/contato" onClick={() => setOpen(false)}>Contato</Link>
           <Link href="/dashboard" onClick={() => setOpen(false)}>Entrar</Link>
         </nav>

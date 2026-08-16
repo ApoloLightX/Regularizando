@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const projectRoot = path.resolve(import.meta.dirname, "..");
-const publicPages = ["Home.tsx", "Product.tsx", "UseCases.tsx", "PilotTelecom.tsx", "Security.tsx", "PrivacyNotice.tsx"];
+const publicPages = ["Home.tsx", "Product.tsx", "UseCases.tsx", "PilotTelecom.tsx", "ImplementationSuccess.tsx", "Security.tsx", "PrivacyNotice.tsx"];
 
 describe("public accessibility baseline", () => {
   it("provides a main landmark and one primary heading in each public route", () => {
@@ -28,6 +28,10 @@ describe("public accessibility baseline", () => {
     expect(nav).toContain("<nav");
     expect(footer).toContain("<footer");
     expect(footer).toContain("<nav");
+    expect(nav).toContain('href="/demonstracao"');
+    expect(nav).toContain('href="/implantacao-e-sucesso"');
+    expect(footer).toContain('href="/demonstracao"');
+    expect(footer).toContain('href="/implantacao-e-sucesso"');
     for (const page of publicPages) {
       const source = fs.readFileSync(path.join(projectRoot, "client", "src", "pages", page), "utf8");
       expect(source).not.toMatch(/tabIndex={[1-9]/);

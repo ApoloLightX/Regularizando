@@ -206,3 +206,11 @@
 - [x] Corrigir o formulário de contato para validar campos essenciais antes do envio e informar a causa acionável da falha ao usuário.
 - [x] Exibir estado de envio e recuperação de erro claros no fluxo público de solicitação de piloto e pedido LGPD.
 - [ ] Verificar e reduzir a percepção de carregamento vazio no acesso inicial ao dashboard, sem prometer desempenho não medido.
+- [ ] Auditar as páginas públicas atuais contra o parecer e publicar apenas afirmações suportadas por código, testes ou dados identificados como ilustrativos.
+- [x] Criar uma demonstração navegável do fluxo documento → extração assistida → requisito → revisão humana → responsável → evidência → decisão, com dados explicitamente ilustrativos e sem simular cliente.
+- [x] Reestruturar a página Produto como visita guiada de entradas, controles, papéis, estados e limites atuais do sistema.
+- [x] Transformar o Piloto Telecom em oferta comercial concreta com entradas, etapas, entregáveis, critérios de sucesso e limites de escopo reais.
+- [x] Criar a rota pública Implantação e Sucesso explicando kickoff, organização do legado, configuração, go-live assistido, operação, acompanhamento, expansão e offboarding.
+- [x] Incluir transparência pública de maturidade por estado Implementado, Piloto e Roadmap sem fabricar integrações, provas sociais, clientes, métricas ou certificações.
+- [x] Melhorar descoberta e conversão com metadados, CTAs de demonstração e estrutura técnica de conteúdo, sem afirmar desempenho orgânico não medido.
+- [x] Validar a nova prova de produto em rotas públicas, responsividade, acessibilidade, typecheck, testes e build antes da publicação.
