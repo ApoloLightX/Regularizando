@@ -189,3 +189,9 @@
 - [x] Corrigir a demonstração pública para o universo coerente de Portfólio Telecom · SP e explicitar numerador e denominador da cobertura documental ilustrativa.
 - [x] Revisar e ampliar as evidências de rate limit, quarentena, signed URL, RBAC, continuidade e auditoria conforme a matriz adversarial da Release Candidate.
 - [x] Produzir o relatório final estruturado da Release Candidate pré-piloto, com limitações e prontidão separada para desenvolvimento, demonstração, piloto controlado e enterprise.
+- [x] Revisar a prévia publicada do Regularizando contra o briefing estratégico, sem alterar o produto nesta etapa.
+- [x] Pesquisar e comparar e-licencie, Licentia, Onegreen, Ambisis e concorrentes brasileiros diretos com fontes atuais.
+- [x] Avaliar hipóteses de inovação aberta industrial, POC siderúrgica e diferenciação por governança ambiental verificável sem alegar relações inexistentes.
+- [x] Definir tese competitiva, categorias, beachheads, ICPs, Fit Score, GTM de 20 contatos e roadmap NOW/NEXT/LATER/DON'T.
+- [x] Entregar a análise estratégica para revisão humana antes de alterações substanciais de produto ou marca.
+- [ ] [Fase posterior após aprovação] Definir e aplicar a identidade visual Rastro, preservando a coerência do produto e a acessibilidade.
