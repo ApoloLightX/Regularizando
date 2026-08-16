@@ -199,3 +199,7 @@
 - [x] Criar e aplicar ativos de marca responsivos — logotipo, marca reduzida, favicon e tratamento de ícone — sem usar marca de terceiro.
 - [x] Atualizar cabeçalho, rodapé, homepage e rotas públicas com a identidade Rastro e o posicionamento de gestão ambiental verificável.
 - [x] Validar typecheck, suíte de regressão, build de produção e regras estruturais de contraste/foco da identidade Rastro; a conferência visual manual continua como pendência operacional por indisponibilidade do navegador.
+- [x] Diagnosticar o símbolo Rastro atual, que não foi aprovado visualmente, e definir os critérios de substituição por uma marca simples e legível em favicon, navegação e apresentação.
+- [x] Explorar direções de logotipo sem microtexto, moldura genérica, folhas, globos, escudos ou alegações visuais de certificação.
+- [ ] Aplicar apenas a direção de marca aprovada ao wordmark, favicon e superfícies públicas, preservando acessibilidade e coerência editorial.
+- [ ] Validar a nova marca com usos reduzidos, monocromáticos e em contexto de interface antes de consolidá-la como identidade pública.

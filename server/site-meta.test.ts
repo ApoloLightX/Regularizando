@@ -17,6 +17,7 @@ describe("site metadata", () => {
     expect(getSiteMeta("/obrigacoes").noindex).toBe(true);
     expect(getSiteMeta("/fontes").noindex).toBe(true);
     expect(getSiteMeta("/convites/token-unico").noindex).toBe(true);
+    expect(getSiteMeta("/direcoes-de-marca").noindex).toBe(true);
     expect(getSiteMeta("/rota-inexistente").notFound).toBe(true);
   });
 });

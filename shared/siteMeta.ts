@@ -43,6 +43,11 @@ const publicPages: Record<string, SiteMeta> = {
     description: "Saiba quais dados são utilizados, para quais finalidades e como solicitar direitos de privacidade no Regularizando.",
     canonicalPath: "/aviso-de-privacidade",
   },
+  "/direcoes-de-marca": {
+    title: "Direções de marca | Regularizando",
+    description: "Prévia interna de direções de marca do Regularizando.",
+    noindex: true,
+  },
 };
 
 export function isPrivatePath(path: string) {

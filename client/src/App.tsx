@@ -23,6 +23,7 @@ import Leads from "./pages/Leads";
 import PublicValidation from "./pages/PublicValidation";
 import DataGovernance from "./pages/DataGovernance";
 import PrivacyNotice from "./pages/PrivacyNotice";
+import BrandDirections from "./pages/BrandDirections";
 import MarketingFooter from "./components/MarketingFooter";
 
 function Router() {
@@ -47,6 +48,7 @@ function Router() {
       <Route path={"/contato"} component={Contact} />
       <Route path={"/seguranca"} component={Security} />
       <Route path={"/aviso-de-privacidade"} component={PrivacyNotice} />
+      <Route path={"/direcoes-de-marca"} component={BrandDirections} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
