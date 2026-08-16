@@ -1,4 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
+import { DashboardDataSkeleton } from "@/components/DashboardDataSkeleton";
 import { trpc } from "@/lib/trpc";
 import { AlertTriangle, ArrowRight, BarChart3, CheckCircle2, ClipboardCheck, FileWarning, FileUp, Gauge, HardHat, Leaf, Plus, ShieldAlert, TowerControl, X } from "lucide-react";
 import type { FormEvent } from "react";
@@ -65,7 +66,7 @@ export default function Dashboard() {
     setForm((current) => ({ ...current, name: "", code: "", title: "", metricCode: "", metricValue: "", metricTarget: "", metricUnit: "" }));
   }
 
-  if (overview.isLoading) return <DashboardLayout><div className="dashboard-loading">Carregando seu espaço de trabalho…</div></DashboardLayout>;
+  if (overview.isLoading) return <DashboardLayout><DashboardDataSkeleton /></DashboardLayout>;
 
   if (!organization) {
     return <DashboardLayout><section className="onboarding-shell"><div className="onboarding-panel"><span className="kicker">01 / Configuração inicial</span><TowerControl size={34} /><h1>Crie o primeiro espaço de trabalho.</h1><p>Escolha a organização que vai reunir sites, licenças, indicadores ESG e evidências. Seus dados ficarão isolados para esse contexto.</p><form onSubmit={createWorkspace}><label>Nome da organização<input name="name" required minLength={3} placeholder="Ex.: Operação de infraestrutura" /></label><label>Setor<select name="sector" defaultValue="telecom"><option value="telecom">Telecom e sites distribuídos</option><option value="infraestrutura">Infraestrutura e obras</option><option value="industria">Indústria</option><option value="consultoria">Consultoria ambiental</option><option value="outro">Outro</option></select></label>{submitError && <p className="form-error">{submitError.message}</p>}<button className="button button--mint" disabled={isSaving} type="submit">Criar e acessar o painel <ArrowRight size={16} /></button></form></div><div className="onboarding-aside"><span className="status-chip status-chip--verified"><CheckCircle2 size={14} /> Multi-tenant por organização</span><h2>Do primeiro ativo ao relatório ESG.</h2><p>Comece por um conjunto pequeno de sites e expanda com a mesma governança para toda a operação.</p><div className="onboarding-steps"><span>01 · Inventário de sites</span><span>02 · Licenças e condicionantes</span><span>03 · Evidências e revisão</span><span>04 · Indicadores e decisão</span></div></div></section></DashboardLayout>;

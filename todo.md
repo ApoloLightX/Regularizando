@@ -205,8 +205,8 @@
 - [ ] Validar a nova marca com usos reduzidos, monocromáticos e em contexto de interface antes de consolidá-la como identidade pública.
 - [x] Corrigir o formulário de contato para validar campos essenciais antes do envio e informar a causa acionável da falha ao usuário.
 - [x] Exibir estado de envio e recuperação de erro claros no fluxo público de solicitação de piloto e pedido LGPD.
-- [ ] Verificar e reduzir a percepção de carregamento vazio no acesso inicial ao dashboard, sem prometer desempenho não medido.
-- [ ] Auditar as páginas públicas atuais contra o parecer e publicar apenas afirmações suportadas por código, testes ou dados identificados como ilustrativos.
+- [x] Verificar e reduzir a percepção de carregamento vazio no acesso inicial ao dashboard, sem prometer desempenho não medido.
+- [x] Auditar as páginas públicas atuais contra o parecer e publicar apenas afirmações suportadas por código, testes ou dados identificados como ilustrativos.
 - [x] Criar uma demonstração navegável do fluxo documento → extração assistida → requisito → revisão humana → responsável → evidência → decisão, com dados explicitamente ilustrativos e sem simular cliente.
 - [x] Reestruturar a página Produto como visita guiada de entradas, controles, papéis, estados e limites atuais do sistema.
 - [x] Transformar o Piloto Telecom em oferta comercial concreta com entradas, etapas, entregáveis, critérios de sucesso e limites de escopo reais.
