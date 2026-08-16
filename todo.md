@@ -176,7 +176,7 @@
 - [x] Auditar a versão pública atual contra o parecer externo e registrar apenas divergências ainda existentes.
 - [x] Criar Aviso de Privacidade revisável e vincular o formulário de contato à finalidade, ao consentimento e ao aviso.
 - [x] Corrigir a narrativa da demonstração para um único contexto setorial coerente, sem apresentar dados de cliente como reais.
-- [ ] [Próxima fase — não bloqueia RC] Definir e aplicar a identidade visual Rastro com símbolo responsivo, wordmark, favicon, versão monocromática e sistema gráfico derivado da rastreabilidade.
+- [x] Definir e aplicar a identidade visual Rastro com símbolo responsivo, wordmark, favicon, versão monocromática e sistema gráfico derivado da rastreabilidade.
 - [x] Atualizar a prova técnica pública e o posicionamento institucional sem inventar clientes, depoimentos, certificações ou métricas.
 - [x] Validar acessibilidade estrutural, typecheck, testes e build após as alterações; as rotas públicas responderam HTTP 200 no ambiente de desenvolvimento.
 - [ ] [Pendente operacional — não bloqueia RC técnica] Confirmar visualmente desktop e mobile quando o subsistema de navegador voltar a capturar telas, pois a captura automatizada falhou no ambiente atual.
@@ -194,4 +194,8 @@
 - [x] Avaliar hipóteses de inovação aberta industrial, POC siderúrgica e diferenciação por governança ambiental verificável sem alegar relações inexistentes.
 - [x] Definir tese competitiva, categorias, beachheads, ICPs, Fit Score, GTM de 20 contatos e roadmap NOW/NEXT/LATER/DON'T.
 - [x] Entregar a análise estratégica para revisão humana antes de alterações substanciais de produto ou marca.
-- [ ] [Fase posterior após aprovação] Definir e aplicar a identidade visual Rastro, preservando a coerência do produto e a acessibilidade.
+- [x] Definir e aplicar a identidade visual Rastro, preservando a coerência do produto e a acessibilidade.
+- [x] Definir o sistema visual Rastro com paleta, tipografia, símbolo, wordmark, regras de contraste e aplicações monocromáticas.
+- [x] Criar e aplicar ativos de marca responsivos — logotipo, marca reduzida, favicon e tratamento de ícone — sem usar marca de terceiro.
+- [x] Atualizar cabeçalho, rodapé, homepage e rotas públicas com a identidade Rastro e o posicionamento de gestão ambiental verificável.
+- [x] Validar typecheck, suíte de regressão, build de produção e regras estruturais de contraste/foco da identidade Rastro; a conferência visual manual continua como pendência operacional por indisponibilidade do navegador.

@@ -1,4 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Regularizando">
   <rect width="64" height="64" rx="16" fill="#082b2e"/>
-  <path d="M17 18h23c8 0 13 5 13 13s-5 14-13 14H28v-8h12c3 0 5-2 5-6s-2-5-5-5H25v22h-8V18z" fill="#78d2b0"/>
+  <g fill="none" stroke="#78d2b0" stroke-linecap="round" stroke-width="5">
+    <path d="M12 44c9-1 15-6 18-15C33 20 40 15 51 14"/>
+    <path d="M13 17c7 .5 12 3 16 8 5 7 12 10 22 11"/>
+    <path d="M15 33c6 0 10-2 14-6 6-7 12-10 22-10"/>
+  </g>
+  <circle cx="51" cy="14" r="5" fill="#78d2b0"/>
 </svg>

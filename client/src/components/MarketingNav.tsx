@@ -1,11 +1,10 @@
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-
-const logoUrl = "/manus-storage/regularizando-mark_ccce30b2.png";
+import { RastroSymbol } from "./RastroBrand";
 
 export function BrandMark() {
-  return <img src={logoUrl} alt="" className="brand__mark" onError={(event) => { event.currentTarget.style.opacity = "0"; }} />;
+  return <RastroSymbol className="brand__mark" />;
 }
 
 export default function MarketingNav() {

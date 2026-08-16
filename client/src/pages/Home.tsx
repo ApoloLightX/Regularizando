@@ -14,8 +14,8 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import { RastroSymbol } from "@/components/RastroBrand";
 
-const logoUrl = "/manus-storage/regularizando-mark_ccce30b2.png";
 const heroUrl = "/manus-storage/regularizando-topographic-hero_03f09fb6.png";
 
 const operationalFlow = [
@@ -34,7 +34,7 @@ const evidenceRows = [
 function AppLogo({ compact = false }: { compact?: boolean }) {
   return (
     <a className={`brand ${compact ? "brand--compact" : ""}`} href="#top" aria-label="Regularizando, voltar ao início">
-      <img src={logoUrl} alt="" className="brand__mark" onError={(event) => { event.currentTarget.style.opacity = "0"; }} />
+      <RastroSymbol className="brand__mark" />
       <span className="brand__name">regularizando</span>
     </a>
   );
@@ -78,7 +78,7 @@ export default function Home() {
           <div className="hero__grain" aria-hidden="true" />
           <div className="hero-inner">
             <div className="hero-copy">
-              <p className="eyebrow eyebrow--light"><span className="eyebrow-dot" /> Inteligência ambiental verificável</p>
+              <p className="eyebrow eyebrow--light"><RastroSymbol className="eyebrow-rastro" /> Inteligência ambiental verificável</p>
               <h1 id="hero-title">Gestão ambiental sem <em>planilhas dispersas.</em></h1>
               <p className="hero-lede">Centralize licenças, condicionantes, responsáveis e documentos. O Regularizando identifica pendências e organiza evidências para a revisão do profissional responsável.</p>
               <div className="hero-actions">
