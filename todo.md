@@ -203,3 +203,6 @@
 - [x] Explorar direções de logotipo sem microtexto, moldura genérica, folhas, globos, escudos ou alegações visuais de certificação.
 - [ ] Aplicar apenas a direção de marca aprovada ao wordmark, favicon e superfícies públicas, preservando acessibilidade e coerência editorial.
 - [ ] Validar a nova marca com usos reduzidos, monocromáticos e em contexto de interface antes de consolidá-la como identidade pública.
+- [x] Corrigir o formulário de contato para validar campos essenciais antes do envio e informar a causa acionável da falha ao usuário.
+- [x] Exibir estado de envio e recuperação de erro claros no fluxo público de solicitação de piloto e pedido LGPD.
+- [ ] Verificar e reduzir a percepção de carregamento vazio no acesso inicial ao dashboard, sem prometer desempenho não medido.
